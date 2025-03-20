@@ -19,30 +19,64 @@ from sklearn.decomposition import TruncatedSVD
 def load_data():
     return pd.read_csv('./data/categorized_specializations.csv')
 
+
+import os
+import gdown
+
+# ---------------------------
+# Function to Download Model Files from Google Drive Folders
+# ---------------------------
+@st.cache_resource
+def download_models_from_drive():
+    # Folder URLs from Google Drive (ensure these folders are shared publicly)
+    major_folder_url = "https://drive.google.com/drive/folders/1HxH7-e3ghoR0G4NmYwwiZMwkwfgy6n_f?usp=sharing"
+    university_folder_url = "https://drive.google.com/drive/folders/1QNJ3IOwWihRQiE9wLbUhvppuaxETKQ72?usp=sharing"
+    
+    # Create output directories if they don't exist
+    os.makedirs("models/major_models", exist_ok=True)
+    os.makedirs("models/university_models", exist_ok=True)
+    
+    # Download the entire folder using gdown
+    st.info("Downloading major models from Google Drive...")
+    gdown.download_folder(url=major_folder_url, output="models/major_models", quiet=False)
+    
+    st.info("Downloading university models from Google Drive...")
+    gdown.download_folder(url=university_folder_url, output="models/university_models", quiet=False)
+
+# ---------------------------
+# Function to Load Models
+# ---------------------------
 @st.cache_resource
 def load_models():
+    # Download all model files from the folders
+    download_models_from_drive()
+    
     models = {
-        "rf_specialization": joblib.load("rf_specialization.pkl"),
-        "rf_university": joblib.load("./university models 11 Mar/rf_university.pkl"),
+        "rf_specialization": joblib.load("models/major_models/rf_specialization.pkl"),
+        "rf_university": joblib.load("models/university_models/rf_university.pkl"),
         "xgb_specialization": xgb.XGBClassifier(),
-        # "xgb_university": xgb.XGBClassifier(),  # Not used
-        "label_encoders_specialization": joblib.load("label_encoders_specialization.pkl"),
-        "label_encoders_university": joblib.load("./university models 11 Mar/label_encoders_university.pkl"),
-        "scaler_specialization": joblib.load("scaler_specialization.pkl"),
-        "scaler_university": joblib.load("./university models 11 Mar/scaler_university.pkl"),
-        "svd_specialization": joblib.load("svd_specialization.pkl"),
-        "knn_specialization": joblib.load("knn_specialization.pkl"),
-        "svd_university": joblib.load("./university models 11 Mar/svd_univ.pkl"),
-        "knn_university": joblib.load("./university models 11 Mar/knn_univ.pkl"),
-        "le_y_specialization": joblib.load("le_y_spec.pkl"),
-        "le_y_university": joblib.load("./university models 11 Mar/le_y_univ.pkl"),
-        "one_hot_columns_university": joblib.load("./university models 11 Mar/one_hot_columns_university.pkl")
+        "label_encoders_specialization": joblib.load("models/major_models/label_encoders_specialization.pkl"),
+        "label_encoders_university": joblib.load("models/university_models/label_encoders_university.pkl"),
+        "scaler_specialization": joblib.load("models/major_models/scaler_specialization.pkl"),
+        "scaler_university": joblib.load("models/university_models/scaler_university.pkl"),
+        "svd_specialization": joblib.load("models/major_models/svd_specialization.pkl"),
+        "knn_specialization": joblib.load("models/major_models/knn_specialization.pkl"),
+        "svd_university": joblib.load("models/university_models/svd_univ.pkl"),
+        "knn_university": joblib.load("models/university_models/knn_univ.pkl"),
+        "le_y_specialization": joblib.load("models/major_models/le_y_spec.pkl"),
+        "le_y_university": joblib.load("models/university_models/le_y_univ.pkl"),
+        "one_hot_columns_university": joblib.load("models/university_models/one_hot_columns_university.pkl")
     }
-    models["xgb_specialization"].load_model("xgb_specialization.json")
+    
+    # Load the XGB model from JSON for specialization
+    models["xgb_specialization"].load_model("models/major_models/xgb_specialization.json")
+    
     return models
 
+# Load models and data
 models = load_models()
 df = load_data()
+
 
 st.markdown("""
     <style>
@@ -199,7 +233,7 @@ def display_specialization_stats(specialization, df):
     if subset.empty:
         return None
     stats = {
-#        "🔢 Number of Students": subset.shape[0],
+        "🔢 Number of Students": subset.shape[0],
         "📊 Avg Normalized CGPA": round(subset['normalized_cgpa'].mean(), 2),
         "📝 Avg TOEFL Score": round(subset['toeflScore'].mean(), 2),
         "🗣 Avg GRE Verbal": round(subset['greV'].mean(), 2),
@@ -214,9 +248,9 @@ def display_specialization_stats(specialization, df):
 # ---------------------------
 # Streamlit UI
 # ---------------------------
-st.title("🎓 University & Course Recommender System")
+st.title("🎓 University & Major Recommender System")
 # Navigation Sidebar
-page = st.sidebar.radio("Select a Page", ["Home", "Course Recommendation", "University Recommendation"])
+page = st.sidebar.radio("Select a Page", ["Home", "Major Recommendation", "University Recommendation"])
 
 if page == "Home":
     st.header("Welcome to the Recommender System")
@@ -228,8 +262,8 @@ if page == "Home":
     """)
 
 # Streamlit UI for Course Recommendation
-elif page == "Course Recommendation":
-    st.header("📌 Course Recommendation")
+elif page == "Major Recommendation":
+    st.header("📌 Major Recommendation")
     user_input = {
         "major": st.selectbox("Major", sorted(df['major'].unique())),
         "researchExp": st.number_input("Research Experience (years)", min_value=0.0, step=0.1),
@@ -251,7 +285,7 @@ elif page == "Course Recommendation":
         feature_order=feature_order_spec
     )
     
-    if st.button("🔍 Recommend Specialization"):
+    if st.button("🔍 Recommend Major"):
         recs = hybrid_recommendation(
             input_df_spec, 
             models['rf_specialization'][0], 
@@ -260,7 +294,7 @@ elif page == "Course Recommendation":
             models['svd_specialization'],
             models['le_y_specialization']
         )
-        st.success("🎯 Recommended Courses:")
+        st.success("🎯 Recommended Majors:")
         for r in recs:
             st.markdown(f"#### {r.upper()} 🚀")
             stats_df = display_specialization_stats(r, df)
@@ -327,7 +361,7 @@ elif page == "University Recommendation":
                 # Append the data to the list
                 university_data_list.append({
                     'University': rec.upper(),
-                    '📊 World Rank': university_rank,
+                    '📊 World University Ranking': university_rank,
                     '📉 Acceptance Rate': f"{acceptance_rate}%",
                 })
             else:
@@ -342,4 +376,6 @@ elif page == "University Recommendation":
             st.table(university_df)
         else:
             st.warning("No recommendations found.")
+
+
 
