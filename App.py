@@ -29,8 +29,8 @@ import gdown
 @st.cache_resource
 def download_models_from_drive():
     # Folder URLs from Google Drive (ensure these folders are shared publicly)
-    major_folder_url = "https://drive.google.com/drive/folders/1HxH7-e3ghoR0G4NmYwwiZMwkwfgy6n_f?usp=sharing"
-    university_folder_url = "https://drive.google.com/drive/folders/1QNJ3IOwWihRQiE9wLbUhvppuaxETKQ72?usp=sharing"
+    major_folder_url = "https://drive.google.com/drive/folders/1HxH7-e3ghoR0G4NmYwwiZMwkwfgy6n_f?usp=drive_link"
+    university_folder_url = "https://drive.google.com/drive/folders/1QNJ3IOwWihRQiE9wLbUhvppuaxETKQ72?usp=drive_link"
     
     # Create output directories if they don't exist
     os.makedirs("models/major_models", exist_ok=True)
