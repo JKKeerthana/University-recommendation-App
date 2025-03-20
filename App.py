@@ -51,29 +51,43 @@ def load_models():
     # Download all model files from the folders
     download_models_from_drive()
     
-    models = {
-        "rf_specialization": joblib.load("models/major_models/rf_specialization.pkl"),
-        "rf_university": joblib.load("models/university_models/rf_university.pkl"),
-        "xgb_specialization": xgb.XGBClassifier(),
-        "label_encoders_specialization": joblib.load("models/major_models/label_encoders_specialization.pkl"),
-        "label_encoders_university": joblib.load("models/university_models/label_encoders_university.pkl"),
-        "scaler_specialization": joblib.load("models/major_models/scaler_specialization.pkl"),
-        "scaler_university": joblib.load("models/university_models/scaler_university.pkl"),
-        "svd_specialization": joblib.load("models/major_models/svd_specialization.pkl"),
-        "knn_specialization": joblib.load("models/major_models/knn_specialization.pkl"),
-        "svd_university": joblib.load("models/university_models/svd_univ.pkl"),
-        "knn_university": joblib.load("models/university_models/knn_univ.pkl"),
-        "le_y_specialization": joblib.load("models/major_models/le_y_spec.pkl"),
-        "le_y_university": joblib.load("models/university_models/le_y_univ.pkl"),
-        "one_hot_columns_university": joblib.load("models/university_models/one_hot_columns_university.pkl")
+    models = {}
+
+    # Define model paths
+    model_paths = {
+        "rf_specialization": "models/major_models/rf_specialization.pkl",
+        "rf_university": "models/university_models/rf_university.pkl",
+        "xgb_specialization": "models/major_models/xgb_specialization.json",
+        "label_encoders_specialization": "models/major_models/label_encoders_specialization.pkl",
+        "label_encoders_university": "models/university_models/label_encoders_university.pkl",
+        "scaler_specialization": "models/major_models/scaler_specialization.pkl",
+        "scaler_university": "models/university_models/scaler_university.pkl",
+        "svd_specialization": "models/major_models/svd_specialization.pkl",
+        "knn_specialization": "models/major_models/knn_specialization.pkl",
+        "svd_university": "models/university_models/svd_univ.pkl",
+        "knn_university": "models/university_models/knn_univ.pkl",
+        "le_y_specialization": "models/major_models/le_y_spec.pkl",
+        "le_y_university": "models/university_models/le_y_univ.pkl",
+        "one_hot_columns_university": "models/university_models/one_hot_columns_university.pkl"
     }
     
-    # Load the XGB model from JSON for specialization
-    models["xgb_specialization"].load_model("models/major_models/xgb_specialization.json")
+    # Load models and check if files exist
+    for model_name, model_path in model_paths.items():
+        if os.path.exists(model_path):
+            print(f"Loading {model_name} from {model_path}")  # Debugging print statement
+            if model_name == "xgb_specialization":
+                models[model_name] = xgb.XGBClassifier()
+                models[model_name].load_model(model_path)  # Load XGBoost model from JSON
+            else:
+                models[model_name] = joblib.load(model_path)  # Load other models with joblib
+        else:
+            print(f"Model file {model_path} does not exist! Please check the file path.")
     
     return models
 
-# Load models and data
+# Other functions (e.g., download_models_from_drive, preprocess_input, etc.) stay the same
+
+# Example usage: Load models and data
 models = load_models()
 df = load_data()
 
