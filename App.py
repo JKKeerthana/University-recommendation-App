@@ -15,7 +15,7 @@ from sklearn.decomposition import TruncatedSVD
 # ---------------------------
 # Load data and models
 # ---------------------------
-@st.cache_data
+#@st.cache_data
 def load_data():
     return pd.read_csv('./data/categorized_specializations.csv')
 
@@ -26,7 +26,7 @@ import gdown
 # ---------------------------
 # Function to Download Model Files from Google Drive Folders
 # ---------------------------
-@st.cache_resource
+#@st.cache_resource
 def download_models_from_drive():
     # Folder URLs from Google Drive (ensure these folders are shared publicly)
     major_folder_url = "https://drive.google.com/drive/folders/1HxH7-e3ghoR0G4NmYwwiZMwkwfgy6n_f?usp=sharing"
