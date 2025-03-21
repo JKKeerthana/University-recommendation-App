@@ -15,6 +15,7 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.decomposition import TruncatedSVD
 
+
 # ---------------------------
 # Load data and models
 # ---------------------------
@@ -28,22 +29,22 @@ def load_data():
 # ---------------------------
 model_files = {
     "major_models": {
-        "knn_specialization": "1IQNJkJZhooxp4t1tttyJoC6PCQ9iqQF7",
-        "rf_specialization": "1fSpRsvEH8qcnSwrPdib5v8bA8X7f_c0v",
-        "xgb_specialization": "12Aek2FdKkX_zx3vNoxCIJiJiTLJ8BSH2",
-        "label_encoders_specialization": "1fFnlPNWyybblxwV0Y6R7-wz_ci46097j",
-        "le_y_spec": "1BZWcV7zQFdax2Eq1UeGdpd_qE0riZDwx",
-        "scaler_specialization": "1-ASKE-_bR1-R2fSrmeyOygYHhSiceaBn",
-        "svd_specialization": "1K_Y6WdaJJxrluZx7PzyvvzCXVeSIiRzp"
+        "knn_specialization": "1bwej-sPxU0CdTgtB5Fuu2uDwLZcy5R3d",
+        "rf_specialization": "16z_IrghbBi9O60maC8JvMR9wW_uGmD30",
+        "xgb_specialization": "1KbtVfbgn82BcbWY3LgIiOEHinFYZLfXZ",
+        "label_encoders_specialization": "10TCQ2WXjT4MA2nyc4UfXRHpAsgKei1P9",
+        "le_y_spec": "1Kaz6vFS9xACZqt-YJ7SBWnV0nSCxIy6Z",
+        "scaler_specialization": "1GdzYesp7LVOpfKosBuKNQ5UzpoV7hXCg",
+        "svd_specialization": "1KLuR71j2XVB9sqAhmWxwvgFKAxkPtDXl"
     },
     "university_models": {
-        "knn_univ": "13a_yqW9LBRrzBH_kWbTnYcm1fk3DFOvl",
-        "rf_university": "1cZqe3_F0DGDPVk858dxR0s2VyK8AZG5z",
-        "scaler_university": "1gr-8DH74Pj4x3nhaqb7gkHNDE8YlkfY-",
-        "label_encoders_university": "1-_i8cT2k7sXDTeQUKddXQf9dmrN6JENr",
-        "le_y_univ": "1621N4WEPQ_76qtABp-FLbTwO7DRH7U7u",
-        "one_hot_columns_university": "1bcuARdLcUOcRDtvJ3huIQQNjaep8o0aG",
-        "svd_univ": "1hCIzCpMPbZiomSKOUr-dXJtDEMZPDXda"
+        "knn_univ": "1XGniImJU0klsAXgM6eqTUlrmKmKCDbVj",
+        "rf_university": "1kn5cQ_4qBeQInup1Ao5gYcTac0lCHvui",
+        "scaler_university": "1YsOV0xk6maZDuLrFEHMIGXLzPIhQhp_J",
+        "label_encoders_university": "1sC5uTcrxcUpOPXSKRj_H5sBCnsAkuf46",
+        "le_y_univ": "15Wt7eEAV2DpQFJUXxFjz_jNG-wmosBVx",
+        "one_hot_columns_university": "1VYm2At7iP0Fu31g8lHFHrCqd9MkBXwcA",
+        "svd_univ": "1XfCvLvClIMFAC27YeMxSQBBlicm_lTAv"
     }
 }
 
@@ -62,14 +63,15 @@ def download_models_from_drive():
             if not os.path.exists(file_path):  # Avoid re-downloading
                 st.info(f"Downloading {model_name}...")
                 gdown.download(f"https://drive.google.com/uc?id={file_id}", file_path, quiet=False)
+                # Debug: Print the path where the model is saved
+                st.write(f"Model {model_name} saved at {os.path.abspath(file_path)}")
             else:
-                st.success(f"{model_name} already exists.")
+                st.success(f"{model_name} already exists at {os.path.abspath(file_path)}")
 
 
 # ---------------------------
 # Function to Load Models
 # ---------------------------
-#@st.cache_resource
 def load_models():
     download_models_from_drive()  # Ensure models are downloaded first
     models = {}
@@ -106,6 +108,8 @@ def load_models():
 
     return models
 
+
+# Example usage: Load models and data
 models = load_models()
 df = load_data()
 
@@ -408,6 +412,3 @@ elif page == "University Recommendation":
             st.table(university_df)
         else:
             st.warning("No recommendations found.")
-
-
-
