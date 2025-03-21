@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# 
-#!/usr/bin/env python
-# coding: utf-8
-
+#
 import streamlit as st
 import joblib
 import os
@@ -56,6 +53,25 @@ def download_and_extract_models():
         return None
 
     return extract_to_path
+
+import os
+
+def print_directory_structure(root_dir, indent=0):
+    """Recursively prints the directory structure."""
+    for item in os.listdir(root_dir):
+        path = os.path.join(root_dir, item)
+        if os.path.isdir(path):
+            st.write("📂 " + "  " * indent + f"**{item}**")
+            print_directory_structure(path, indent + 1)
+        else:
+            st.write("📄 " + "  " * indent + item)
+
+# Call this function after extracting the models
+extract_to_path = download_and_extract_models()
+if extract_to_path:
+    st.subheader("🗂 Extracted Model Directory Structure:")
+    print_directory_structure(extract_to_path)
+
 
 
 # ---------------------------
