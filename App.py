@@ -69,7 +69,7 @@ def download_models_from_drive():
 # ---------------------------
 # Function to Load Models
 # ---------------------------
-@st.cache_resource
+#@st.cache_resource
 def load_models():
     download_models_from_drive()  # Ensure models are downloaded first
     models = {}
