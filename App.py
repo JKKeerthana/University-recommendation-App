@@ -93,8 +93,7 @@ def load_models():
     missing_files = [os.path.join(path, file) for file, path in required_files if not os.path.exists(os.path.join(path, file))]
     if missing_files:
         st.error(f"❌ Missing model files: {missing_files}")
-    else
-
+    else:
         st.error(f"All models saved")
         return None
 
