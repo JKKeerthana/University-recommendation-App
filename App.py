@@ -37,7 +37,7 @@ MODEL_ZIP_URL = "MODELS.zip"
 # ---------------------------
 @st.cache_resource
 def download_and_extract_models():
-    model_zip_path = "MODELS.zip"
+    model_zip_path = "https://github.com/JKKeerthana/University-recommendation-App/MODELS.zip"
     
     if not os.path.exists("MODELS"):  # Avoid redundant downloads
         st.info("Downloading model files...")
