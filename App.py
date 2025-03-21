@@ -28,31 +28,28 @@ MODEL_ZIP_URL = "https://drive.google.com/uc?export=download&id=1TgULdbzFn9_MMfb
 # ---------------------------
 # Download and Extract Models
 # ---------------------------
+import gdown
+
 @st.cache_resource
 def download_and_extract_models():
-    model_zip_path = "MODELS.zip"  # Path to save the zip file
+    model_zip_path = "MODELS.zip"
+    gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"  # Your actual file ID
 
-    if not os.path.exists("MODELS"):  # Avoid redundant downloads
-        st.info("Downloading model files from Google Drive...")
-        response = requests.get(MODEL_ZIP_URL, stream=True)
-        # Check if the request was successful
-        if response.status_code == 200:
-            with open(model_zip_path, "wb") as file:
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        file.write(chunk)
-        else:
-            st.error("Failed to download the model files. Check your Google Drive link and file permissions.")
+    if not os.path.exists("MODELS"):
+        st.info("Downloading model files from Google Drive using gdown...")
+        gdown.download(f"https://drive.google.com/uc?id={gdrive_file_id}", model_zip_path, quiet=False)
+
+        st.info("Extracting models...")
+        try:
+            with zipfile.ZipFile(model_zip_path, "r") as zip_ref:
+                zip_ref.extractall("MODELS")
+            os.remove(model_zip_path)
+        except zipfile.BadZipFile:
+            st.error("Downloaded file is not a valid ZIP. Please check the Google Drive file.")
             return None
 
-        # Extract ZIP file
-        st.info("Extracting models...")
-        with zipfile.ZipFile(model_zip_path, "r") as zip_ref:
-            zip_ref.extractall("MODELS")  # Extracts "MODELS" folder
-
-        os.remove(model_zip_path)  # Clean up the ZIP file after extraction
-
     return "MODELS"
+
 
 # ---------------------------
 # Load Models
