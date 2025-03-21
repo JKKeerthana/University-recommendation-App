@@ -77,7 +77,7 @@ if extract_to_path:
 # ---------------------------
 # Load Models
 # ---------------------------
-@st.cache_resource
+#@st.cache_resource
 def load_models():
     model_dir = download_and_extract_models()
     if model_dir is None:
