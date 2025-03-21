@@ -327,11 +327,10 @@ if page == "Home":
     st.write("""
     This system helps you find the most suitable **courses** and **universities** for your academic and professional background.
     
-    - Go to **Course Recommendation** to find potential academic majors.
+    - Go to **Major Recommendation** to find potential academic majors.
     - Go to **University Recommendation** to find the best universities based on your profile.
     """)
 
-# Streamlit UI for Course Recommendation
 elif page == "Major Recommendation":
     st.header("📌 Major Recommendation")
     user_input = {
@@ -358,7 +357,7 @@ elif page == "Major Recommendation":
     if st.button("🔍 Recommend Major"):
         recs = hybrid_recommendation(
             input_df_spec, 
-            models['rf_specialization'][0], 
+            models['rf_specialization'], 
             models['xgb_specialization'],
             models['knn_specialization'], 
             models['svd_specialization'],
@@ -372,7 +371,6 @@ elif page == "Major Recommendation":
                 st.table(stats_df)
             else:
                 st.info("ℹ️ No additional details available.")
-
 
 
 elif page == "University Recommendation":
@@ -399,7 +397,9 @@ elif page == "University Recommendation":
     )
     
     if st.button("🔍 Recommend Universities"):
-        rf_university_model = models["rf_university"]["Random Forest"][0]
+        # Extract the Random Forest model from the loaded dictionary.
+        # (Assuming rf_university.pkl was saved as a dict with key "Random Forest")
+        rf_university_model = models["rf_university"]["Random Forest"]
         
         # If user selects "Select All", pass state as None.
         selected_state = user_input['univ_state'] if user_input['univ_state'] != "Select All" else None
@@ -433,13 +433,10 @@ elif page == "University Recommendation":
                     '📉 Acceptance Rate': f"{acceptance_rate}%",
                 })
             else:
-                # If data is missing, show a warning
                 st.warning(f"Details for {rec} not found.")
         
-        # Convert the list of university data into a pandas DataFrame
         if university_data_list:
             university_df = pd.DataFrame(university_data_list)
-            # Reset the index and start it from 1 instead of 0
             university_df.index = university_df.index + 1  
             st.table(university_df)
         else:
