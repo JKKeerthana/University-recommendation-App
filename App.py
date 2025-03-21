@@ -36,7 +36,7 @@ def download_and_extract_models():
     gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"
 
     # Skip download if models are already extracted
-    if os.path.exists(extract_to_path) and os.path.isdir(extract_to_path):
+    if os.path.exists(extract_to_path) and os.path.isdir(extract_to_path) and os.listdir(extract_to_path):
         if os.path.exists(os.path.join(extract_to_path, "major_models")) and \
            os.path.exists(os.path.join(extract_to_path, "university_models")):
             st.success("✅ Models already exist. Skipping download.")
