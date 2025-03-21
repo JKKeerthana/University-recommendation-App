@@ -62,6 +62,7 @@ def load_models():
         return None
 
     # Debugging: Print the directories being used
+    st.write("Contents of MODELS directory:", os.listdir("MODELS"))
     st.write(f"Model directory being used for loading files: {model_dir}")
     st.write(f"Expected model path for rf_specialization: {model_dir}/major_models/rf_specialization.pkl")
 
