@@ -24,93 +24,65 @@ def load_data():
     return pd.read_csv('data/categorized_specializations.csv')
 
 
-# ---------------------------
-# Define File IDs for Each Model in Google Drive
-# ---------------------------
-model_files = {
-    "major_models": {
-        "knn_specialization": "1bwej-sPxU0CdTgtB5Fuu2uDwLZcy5R3d",
-        "rf_specialization": "16z_IrghbBi9O60maC8JvMR9wW_uGmD30",
-        "xgb_specialization": "1KbtVfbgn82BcbWY3LgIiOEHinFYZLfXZ",
-        "label_encoders_specialization": "10TCQ2WXjT4MA2nyc4UfXRHpAsgKei1P9",
-        "le_y_spec": "1Kaz6vFS9xACZqt-YJ7SBWnV0nSCxIy6Z",
-        "scaler_specialization": "1GdzYesp7LVOpfKosBuKNQ5UzpoV7hXCg",
-        "svd_specialization": "1KLuR71j2XVB9sqAhmWxwvgFKAxkPtDXl"
-    },
-    "university_models": {
-        "knn_univ": "1XGniImJU0klsAXgM6eqTUlrmKmKCDbVj",
-        "rf_university": "1kn5cQ_4qBeQInup1Ao5gYcTac0lCHvui",
-        "scaler_university": "1YsOV0xk6maZDuLrFEHMIGXLzPIhQhp_J",
-        "label_encoders_university": "1sC5uTcrxcUpOPXSKRj_H5sBCnsAkuf46",
-        "le_y_univ": "15Wt7eEAV2DpQFJUXxFjz_jNG-wmosBVx",
-        "one_hot_columns_university": "1VYm2At7iP0Fu31g8lHFHrCqd9MkBXwcA",
-        "svd_univ": "1XfCvLvClIMFAC27YeMxSQBBlicm_lTAv"
-    }
-}
+import requests
+import zipfile
+import joblib
+import streamlit as st
+import xgboost as xgb
+
+MODEL_ZIP_URL = "MODELS.zip"
 
 # ---------------------------
-# Function to Download Model Files
+# Download and Extract Models
 # ---------------------------
 @st.cache_resource
-def download_models_from_drive():
-    os.makedirs("models/major_models", exist_ok=True)
-    os.makedirs("models/university_models", exist_ok=True)
+def download_and_extract_models():
+    model_zip_path = "MODELS.zip"
+    
+    if not os.path.exists("MODELS"):  # Avoid redundant downloads
+        st.info("Downloading model files...")
+        response = requests.get(MODEL_ZIP_URL)
+        with open(model_zip_path, "wb") as file:
+            file.write(response.content)
+        
+        # Extract ZIP file
+        st.info("Extracting models...")
+        with zipfile.ZipFile(model_zip_path, "r") as zip_ref:
+            zip_ref.extractall(".")  # Extracts "MODELS" folder
+        
+        os.remove(model_zip_path)  # Clean up ZIP file
 
-    for category, files in model_files.items():
-        for model_name, file_id in files.items():
-            file_path = f"models/{category}/{model_name}.pkl" if "xgb" not in model_name else f"models/{category}/{model_name}.json"
-
-            if not os.path.exists(file_path):  # Avoid re-downloading
-                st.info(f"Downloading {model_name}...")
-                gdown.download(f"https://drive.google.com/uc?id={file_id}", file_path, quiet=False)
-                # Debug: Print the path where the model is saved
-                st.write(f"Model {model_name} saved at {os.path.abspath(file_path)}")
-            else:
-                st.success(f"{model_name} already exists at {os.path.abspath(file_path)}")
-
+    return "MODELS"
 
 # ---------------------------
-# Function to Load Models
+# Load Models
 # ---------------------------
+@st.cache_resource
 def load_models():
-    download_models_from_drive()  # Ensure models are downloaded first
-    models = {}
-
-    # Define model paths
-    model_paths = {
-        "rf_specialization": "models/major_models/rf_specialization.pkl",
-        "rf_university": "models/university_models/rf_university.pkl",
-        "xgb_specialization": "models/major_models/xgb_specialization.json",
-        "label_encoders_specialization": "models/major_models/label_encoders_specialization.pkl",
-        "label_encoders_university": "models/university_models/label_encoders_university.pkl",
-        "scaler_specialization": "models/major_models/scaler_specialization.pkl",
-        "scaler_university": "models/university_models/scaler_university.pkl",
-        "svd_specialization": "models/major_models/svd_specialization.pkl",
-        "knn_specialization": "models/major_models/knn_specialization.pkl",
-        "svd_university": "models/university_models/svd_univ.pkl",
-        "knn_university": "models/university_models/knn_univ.pkl",
-        "le_y_specialization": "models/major_models/le_y_spec.pkl",
-        "le_y_university": "models/university_models/le_y_univ.pkl",
-        "one_hot_columns_university": "models/university_models/one_hot_columns_university.pkl"
+    model_dir = download_and_extract_models()
+    
+    models = {
+        "rf_specialization": joblib.load(f"{model_dir}/major models/rf_specialization.pkl"),
+        "rf_university": joblib.load(f"{model_dir}/university models/rf_university.pkl"),
+        "xgb_specialization": xgb.XGBClassifier(),
+        "label_encoders_specialization": joblib.load(f"{model_dir}/major models/label_encoders_specialization.pkl"),
+        "label_encoders_university": joblib.load(f"{model_dir}/university models/label_encoders_university.pkl"),
+        "scaler_specialization": joblib.load(f"{model_dir}/major models/scaler_specialization.pkl"),
+        "scaler_university": joblib.load(f"{model_dir}/university models/scaler_university.pkl"),
+        "svd_specialization": joblib.load(f"{model_dir}/major models/svd_specialization.pkl"),
+        "knn_specialization": joblib.load(f"{model_dir}/major models/knn_specialization.pkl"),
+        "svd_university": joblib.load(f"{model_dir}/university models/svd_univ.pkl"),
+        "knn_university": joblib.load(f"{model_dir}/university models/knn_univ.pkl"),
+        "le_y_specialization": joblib.load(f"{model_dir}/major models/le_y_spec.pkl"),
+        "le_y_university": joblib.load(f"{model_dir}/university models/le_y_univ.pkl"),
+        "one_hot_columns_university": joblib.load(f"{model_dir}/university models/one_hot_columns_university.pkl"),
     }
-
-    # Load models if they exist
-    for model_name, model_path in model_paths.items():
-        if os.path.exists(model_path):
-            print(f"Loading {model_name} from {model_path}")  # Debugging print statement
-            if model_name == "xgb_specialization":
-                models[model_name] = xgb.XGBClassifier()
-                models[model_name].load_model(model_path)  # Load XGBoost model from JSON
-            else:
-                models[model_name] = joblib.load(model_path)  # Load other models with joblib
-        else:
-            print(f"⚠️ Model file {model_path} not found!")
-
+    
+    models["xgb_specialization"].load_model(f"{model_dir}/major models/xgb_specialization.json")
     return models
 
-
-# Example usage: Load models and data
 models = load_models()
+
 df = load_data()
 
 
