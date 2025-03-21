@@ -88,24 +88,25 @@ def load_models():
     major_models_path = os.path.join(model_dir, "MODELS", "major_models")
     university_models_path = os.path.join(model_dir, "MODELS", "university_models")
 
-     required_files = [
-        (os.path.join(major_models_path, "rf_specialization.pkl"), "RF Specialization"),
-        (os.path.join(university_models_path, "rf_university.pkl"), "RF University"),
-        (os.path.join(major_models_path, "xgb_specialization.json"), "XGB Specialization"),
-        (os.path.join(major_models_path, "label_encoders_specialization.pkl"), "Label Encoders Specialization"),
-        (os.path.join(university_models_path, "label_encoders_university.pkl"), "Label Encoders University"),
-        (os.path.join(major_models_path, "scaler_specialization.pkl"), "Scaler Specialization"),
-        (os.path.join(university_models_path, "scaler_university.pkl"), "Scaler University"),
-        (os.path.join(major_models_path, "svd_specialization.pkl"), "SVD Specialization"),
-        (os.path.join(major_models_path, "knn_specialization.pkl"), "KNN Specialization"),
-        (os.path.join(university_models_path, "svd_univ.pkl"), "SVD University"),
-        (os.path.join(university_models_path, "knn_univ.pkl"), "KNN University"),
-        (os.path.join(major_models_path, "le_y_spec.pkl"), "Label Encoder Y Spec"),
-        (os.path.join(university_models_path, "le_y_univ.pkl"), "Label Encoder Y Univ"),
-        (os.path.join(university_models_path, "one_hot_columns_university.pkl"), "One Hot Columns University"),
+    required_files = [
+        ("rf_specialization.pkl", major_models_path),
+        ("rf_university.pkl", university_models_path),
+        ("xgb_specialization.json", major_models_path),
+        ("label_encoders_specialization.pkl", major_models_path),
+        ("label_encoders_university.pkl", university_models_path),
+        ("scaler_specialization.pkl", major_models_path),
+        ("scaler_university.pkl", university_models_path),
+        ("svd_specialization.pkl", major_models_path),
+        ("knn_specialization.pkl", major_models_path),
+        ("svd_univ.pkl", university_models_path),
+        ("knn_univ.pkl", university_models_path),
+        ("le_y_spec.pkl", major_models_path),
+        ("le_y_univ.pkl", university_models_path),
+        ("one_hot_columns_university.pkl", university_models_path),
     ]
 
-    missing_files = [path for path, desc in required_files if not os.path.exists(path)]
+    # Verify all required model files exist
+    missing_files = [os.path.join(path, file) for file, path in required_files if not os.path.exists(os.path.join(path, file))]
     if missing_files:
         st.error(f"❌ Missing model files: {missing_files}")
         return None
@@ -128,16 +129,15 @@ def load_models():
             "one_hot_columns_university": joblib.load(os.path.join(university_models_path, "one_hot_columns_university.pkl")),
         }
 
-        # Load the XGBoost model separately from its JSON file
+        # Load XGBoost model separately
         models["xgb_specialization"].load_model(os.path.join(major_models_path, "xgb_specialization.json"))
 
         st.success("✅ Models loaded successfully!")
         return models
     except Exception as e:
-        import traceback
         st.error(f"❌ Error loading models: {e}")
-        st.text(traceback.format_exc())
         return None
+
 
 # Load models
 models = load_models()
@@ -145,19 +145,15 @@ if models is None:
     st.error("❌ Failed to load models. Exiting...")
     st.stop()
 
-# ---------------------------
-# Load Data for Recommendations
-# ---------------------------
+
+# Load data
 df = load_data()
 
-# ---------------------------
-# Custom CSS Styling
-# ---------------------------
 st.markdown("""
     <style>
         body {
-            background-color: #1A1A2E;
-            color: white;
+            background-color: #1A1A2E; /* Dark navy blue */
+            color: white; /* Light gray text */
         }
         .stApp {
             background-color: #1A1A2E;
@@ -166,20 +162,20 @@ st.markdown("""
             color: white;
         }
         .stDataFrame, .stTable {
-            background-color: #16213E;
+            background-color: #16213E; /* Slightly lighter blue */
             color: white;
             border-radius: 10px;
             padding: 10px;
         }
         .stButton > button {
-            background-color: #0F3460;
+            background-color: #0F3460; /* Deep blue */
             color: white;
             border-radius: 8px;
             padding: 10px 15px;
             font-size: 16px;
         }
         .stButton > button:hover {
-            background-color: #533483;
+            background-color: #533483; /* Purple hover effect */
         }
         .stSelectbox, .stTextInput, .stNumberInput, .stRadio, .stSlider {
             background-color: #16213E !important;
@@ -189,17 +185,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+
 # ---------------------------
-# Preprocessing Function
+# Preprocessing function
 # ---------------------------
 def preprocess_input(data, categorical_features, numerical_features, label_encoders, scaler, feature_order, one_hot_columns=None):
     df_input = pd.DataFrame([data])
     # Encode categorical features
     for col in categorical_features:
-        if col in label_encoders and data[col] in label_encoders[col].classes_:
-            df_input[col] = label_encoders[col].transform([data[col]])[0]
+        if col in label_encoders and df_input[col].iloc[0] in label_encoders[col].classes_:
+            df_input[col] = label_encoders[col].transform([df_input[col].iloc[0]])[0]
         else:
-            df_input[col] = -1  # For missing/unknown values
+            df_input[col] = -1  # Handle missing/unknown values
     # Scale numerical features
     df_input[numerical_features] = scaler.transform(df_input[numerical_features])
     if one_hot_columns:
@@ -210,43 +207,49 @@ def preprocess_input(data, categorical_features, numerical_features, label_encod
             df_input[state_column] = 1
     return df_input
 
+
 # ---------------------------
-# Hybrid Recommendation for Specialization
+# Hybrid recommendation for Specialization
 # ---------------------------
 def hybrid_recommendation(input_df, rf_model, xgb_model, collab_model, svd_model, label_encoder, is_university=False, state=None):
     # Content-based predictions
     rf_probs = rf_model.predict_proba(input_df)[0]
     xgb_probs = xgb_model.predict_proba(input_df)[0]
     content_probs = (rf_probs + xgb_probs) / 2
-
+    
     try:
         transformed_features = svd_model.transform(input_df)
         similar_users = collab_model.kneighbors(transformed_features, return_distance=False)
         collab_probs = np.zeros_like(content_probs)
-        # Use the rf_model as fallback for neighbors
+        # Use the rf_model as fallback for each neighbor
         for idx in similar_users.flatten():
             collab_probs += rf_model.predict_proba(input_df)[0]
         collab_probs /= len(similar_users.flatten()) if len(similar_users.flatten()) > 0 else 1
     except Exception as e:
         collab_probs = np.zeros_like(content_probs)
-
+    
     alpha = np.var(content_probs) / (np.var(content_probs) + np.var(collab_probs) + 1e-5)
     final_probs = (content_probs * alpha) + (collab_probs * (1 - alpha))
+    
     top_n = 5 if not is_university else 3
     top_indices = np.argsort(final_probs)[-top_n:][::-1]
+    
     final_recommendations = label_encoder.inverse_transform(top_indices)
     return final_recommendations
 
+
 # ---------------------------
-# Hybrid University Recommendation
+# Hybrid University Recommendation (with Collaborative Filtering)
 # ---------------------------
 def hybrid_university_recommendation(input_df, content_model, collab_model, svd_model, label_encoder,
-                                     is_university=False, state=None, one_hot_columns=None):
+                          is_university=False, state=None, one_hot_columns=None):
     if is_university:
+        # If no particular state is selected ("Select All"), average over all possible state one-hot encodings.
         if state is None and one_hot_columns is not None:
             probs_list = []
             for state_col in one_hot_columns:
                 temp_df = input_df.copy()
+                # Ensure all state columns are zero then set the current one-hot state to 1.
                 temp_df[one_hot_columns] = 0
                 temp_df[state_col] = 1
                 try:
@@ -256,27 +259,35 @@ def hybrid_university_recommendation(input_df, content_model, collab_model, svd_
                 probs_list.append(probs)
             content_probs = np.mean(probs_list, axis=0)
         else:
+            # If a specific state is selected, use the input_df (which already has the proper one-hot column set)
             try:
                 content_probs = content_model.predict_proba(input_df)[0]
             except Exception as e:
                 content_probs = content_model.predict(input_df)
         
+        # Collaborative Filtering: Use KNN and SVD models to generate collaborative probabilities
         try:
             transformed_features = svd_model.transform(input_df)
             similar_users = collab_model.kneighbors(transformed_features, return_distance=False)
             collab_probs = np.zeros_like(content_probs)
+            # Aggregate the collaborative predictions based on similar users
             for idx in similar_users.flatten():
                 collab_probs += content_model.predict_proba(input_df)[0]
             collab_probs /= len(similar_users.flatten()) if len(similar_users.flatten()) > 0 else 1
         except Exception as e:
             collab_probs = np.zeros_like(content_probs)
         
+        # Combine content-based and collaborative-based predictions
         alpha = np.var(content_probs) / (np.var(content_probs) + np.var(collab_probs) + 1e-5)
         final_probs = (content_probs * alpha) + (collab_probs * (1 - alpha))
+        
+        # Select top N universities
         top_n = 3  # Recommend top 3 universities
+        
         top_indices = np.argsort(final_probs)[-top_n:][::-1]
         final_recommendations = label_encoder.inverse_transform(top_indices)
         
+        # If a specific state was requested, filter the recommendations accordingly.
         if state is not None:
             filtered_recommendations = [rec for rec in final_recommendations 
                                         if rec in df[df['univ_state'] == state]['univName'].values]
@@ -284,11 +295,11 @@ def hybrid_university_recommendation(input_df, content_model, collab_model, svd_
                 st.warning(f"⚠️ Only {len(filtered_recommendations)} universities found in {state}. Expanding recommendations.")
                 filtered_recommendations = final_recommendations
             return filtered_recommendations
+        
         return final_recommendations
 
-# ---------------------------
-# Helper: Display Specialization Stats
-# ---------------------------
+
+# Helper function to compute aggregated statistics for a given specialization
 def display_specialization_stats(specialization, df):
     subset = df[df['specialization_category'] == specialization]
     if subset.empty:
@@ -303,10 +314,12 @@ def display_specialization_stats(specialization, df):
     }
     return pd.DataFrame(stats.items(), columns=["Metric", "Value"])
 
+
 # ---------------------------
 # Streamlit UI
 # ---------------------------
 st.title("🎓 University & Major Recommender System")
+# Navigation Sidebar
 page = st.sidebar.radio("Select a Page", ["Home", "Major Recommendation", "University Recommendation"])
 
 if page == "Home":
@@ -359,6 +372,7 @@ elif page == "Major Recommendation":
             else:
                 st.info("ℹ️ No additional details available.")
 
+
 elif page == "University Recommendation":
     st.header("🏫 University Recommendation")
     user_input = {
@@ -383,14 +397,11 @@ elif page == "University Recommendation":
     )
     
     if st.button("🔍 Recommend Universities"):
-        # Adjusting how we extract the Random Forest model for universities
-        # If the loaded rf_university is a dict with key "Random Forest", extract it; otherwise, use it directly.
-        rf_univ = models["rf_university"]
-        if isinstance(rf_univ, dict) and "Random Forest" in rf_univ:
-            rf_university_model = rf_univ["Random Forest"]
-        else:
-            rf_university_model = rf_univ
-
+        # Extract the Random Forest model from the loaded dictionary.
+        # (Assuming rf_university.pkl was saved as a dict with key "Random Forest")
+        rf_university_model = models["rf_university"]["Random Forest"]
+        
+        # If user selects "Select All", pass state as None.
         selected_state = user_input['univ_state'] if user_input['univ_state'] != "Select All" else None
         
         recommendations = hybrid_university_recommendation(
@@ -404,12 +415,18 @@ elif page == "University Recommendation":
             one_hot_columns=models['one_hot_columns_university']
         )
         
+        # Prepare a dataframe for better display
         university_data_list = []
+        
         for rec in recommendations:
             university_data = df[df['univName'] == rec]
+    
             if not university_data.empty:
+                # Extract the rank and acceptance rate for the current university
                 university_rank = university_data['univName_rank'].values[0]
                 acceptance_rate = university_data['acceptance_rate'].values[0]
+                
+                # Append the data to the list
                 university_data_list.append({
                     'University': rec.upper(),
                     '📊 World University Ranking': university_rank,
