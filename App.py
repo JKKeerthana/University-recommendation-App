@@ -29,9 +29,9 @@ def load_data():
 # ---------------------------
 @st.cache_resource
 def download_and_extract_models():
-    model_zip_path = "models.zip"  # Updated ZIP name
-    model_dir = "models_storage"   # Custom directory to extract models
-    gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"  # Your actual Google Drive file ID
+    model_zip_path = "MODELS.zip"
+    model_dir = "MODELS"
+    gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"  # Your actual file ID
 
     # If models already exist, skip download
     if os.path.exists(model_dir) and os.path.isdir(model_dir):
@@ -44,23 +44,19 @@ def download_and_extract_models():
     st.info("📂 Extracting models...")
     try:
         with zipfile.ZipFile(model_zip_path, "r") as zip_ref:
-            zip_ref.extractall(model_dir)  # Extracting to a specific folder
+            zip_ref.extractall()  # Extracts to the current directory
         os.remove(model_zip_path)  # Remove ZIP after extraction
         st.success("✅ Model extraction complete!")
     except zipfile.BadZipFile:
         st.error("❌ Downloaded file is not a valid ZIP. Please check the Google Drive file.")
         return None
 
-    # Debugging: Check if major_models & university_models exist
-    major_models_path = os.path.join(model_dir, "major_models")
-    university_models_path = os.path.join(model_dir, "university_models")
-
-    if not os.path.exists(major_models_path) or not os.path.exists(university_models_path):
-        st.error(f"❌ Model directories not found! Expected: {major_models_path} and {university_models_path}")
+    # Ensure extraction was successful
+    if not os.path.exists(model_dir):
+        st.error(f"❌ Extraction failed! '{model_dir}' directory not found.")
         return None
 
     return model_dir
-
 
 # ---------------------------
 # Load Models
@@ -72,15 +68,15 @@ def load_models():
         st.error("❌ Models directory not found.")
         return None
 
+    # Check extracted contents
     major_models_path = os.path.join(model_dir, "major_models")
     university_models_path = os.path.join(model_dir, "university_models")
 
-    # Debugging: List files in extracted directories
-    try:
-        st.info(f"📂 Major Models: {os.listdir(major_models_path)}")
-        st.info(f"📂 University Models: {os.listdir(university_models_path)}")
-    except FileNotFoundError:
-        st.error(f"❌ Missing directories: {major_models_path} or {university_models_path}")
+    if not os.path.exists(major_models_path):
+        st.error(f"❌ Directory {major_models_path} not found. Check if extraction was successful.")
+        return None
+    if not os.path.exists(university_models_path):
+        st.error(f"❌ Directory {university_models_path} not found. Check if extraction was successful.")
         return None
 
     try:
@@ -111,13 +107,13 @@ def load_models():
         return None
 
 
-# ---------------------------
-# Execute Loading Process
-# ---------------------------
+# Load models
 models = load_models()
 if models is None:
     st.error("❌ Failed to load models. Exiting...")
     st.stop()
+
+
 
 
 
