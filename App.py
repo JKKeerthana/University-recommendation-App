@@ -207,23 +207,24 @@ def preprocess_input(data, categorical_features, numerical_features, label_encod
             df_input[state_column] = 1
     return df_input
 
-
 # ---------------------------
-# Hybrid recommendation for Specialization
+# Hybrid recommendation for Specialization (unchanged)
 # ---------------------------
 def hybrid_recommendation(input_df, rf_model, xgb_model, collab_model, svd_model, label_encoder, is_university=False, state=None):
     # Content-based predictions
     rf_probs = rf_model.predict_proba(input_df)[0]
     xgb_probs = xgb_model.predict_proba(input_df)[0]
+
+    # Ensemble: Averaging the probabilities
     content_probs = (rf_probs + xgb_probs) / 2
     
     try:
         transformed_features = svd_model.transform(input_df)
         similar_users = collab_model.kneighbors(transformed_features, return_distance=False)
         collab_probs = np.zeros_like(content_probs)
-        # Use the rf_model as fallback for each neighbor
+        # (Using content_model.predict_proba on the same input as a fallback)
         for idx in similar_users.flatten():
-            collab_probs += rf_model.predict_proba(input_df)[0]
+            collab_probs += content_model.predict_proba([input_df.iloc[0]])[0]
         collab_probs /= len(similar_users.flatten()) if len(similar_users.flatten()) > 0 else 1
     except Exception as e:
         collab_probs = np.zeros_like(content_probs)
@@ -236,7 +237,6 @@ def hybrid_recommendation(input_df, rf_model, xgb_model, collab_model, svd_model
     
     final_recommendations = label_encoder.inverse_transform(top_indices)
     return final_recommendations
-
 
 # ---------------------------
 # Hybrid University Recommendation (with Collaborative Filtering)
@@ -272,7 +272,7 @@ def hybrid_university_recommendation(input_df, content_model, collab_model, svd_
             collab_probs = np.zeros_like(content_probs)
             # Aggregate the collaborative predictions based on similar users
             for idx in similar_users.flatten():
-                collab_probs += content_model.predict_proba(input_df)[0]
+                collab_probs += content_model.predict_proba([input_df.iloc[0]])[0]
             collab_probs /= len(similar_users.flatten()) if len(similar_users.flatten()) > 0 else 1
         except Exception as e:
             collab_probs = np.zeros_like(content_probs)
@@ -298,7 +298,6 @@ def hybrid_university_recommendation(input_df, content_model, collab_model, svd_
         
         return final_recommendations
 
-
 # Helper function to compute aggregated statistics for a given specialization
 def display_specialization_stats(specialization, df):
     subset = df[df['specialization_category'] == specialization]
@@ -311,9 +310,11 @@ def display_specialization_stats(specialization, df):
         "🗣 Avg GRE Verbal": round(subset['greV'].mean(), 2),
         "📈 Avg GRE Quant": round(subset['greQ'].mean(), 2),
         "📉 Avg GRE Analytical": round(subset['greA'].mean(), 2),
+#        "🔬 Avg Research Exp (yrs)": round(subset['researchExp'].mean(), 2),
+#        "🏭 Avg Industry Exp (yrs)": round(subset['industryExp'].mean(), 2),
+#        "💼 Avg Internship Exp (yrs)": round(subset['internExp'].mean(), 2)
     }
     return pd.DataFrame(stats.items(), columns=["Metric", "Value"])
-
 
 # ---------------------------
 # Streamlit UI
@@ -327,10 +328,11 @@ if page == "Home":
     st.write("""
     This system helps you find the most suitable **courses** and **universities** for your academic and professional background.
     
-    - Go to **Major Recommendation** to find potential academic majors.
+    - Go to **Course Recommendation** to find potential academic majors.
     - Go to **University Recommendation** to find the best universities based on your profile.
     """)
 
+# Streamlit UI for Course Recommendation
 elif page == "Major Recommendation":
     st.header("📌 Major Recommendation")
     user_input = {
@@ -357,7 +359,7 @@ elif page == "Major Recommendation":
     if st.button("🔍 Recommend Major"):
         recs = hybrid_recommendation(
             input_df_spec, 
-            models['rf_specialization'], 
+            models['rf_specialization'][0], 
             models['xgb_specialization'],
             models['knn_specialization'], 
             models['svd_specialization'],
@@ -371,6 +373,7 @@ elif page == "Major Recommendation":
                 st.table(stats_df)
             else:
                 st.info("ℹ️ No additional details available.")
+
 
 
 elif page == "University Recommendation":
@@ -398,8 +401,8 @@ elif page == "University Recommendation":
     
     if st.button("🔍 Recommend Universities"):
         # Extract the Random Forest model from the loaded dictionary.
-        # (Assuming rf_university.pkl was saved as a dict with key "Random Forest")
-        rf_university_model = models["rf_university"]["Random Forest"]
+        # (In training, rf_university.pkl was saved as a dict with key "Random Forest".)
+        rf_university_model = models["rf_university"]["Random Forest"][0]
         
         # If user selects "Select All", pass state as None.
         selected_state = user_input['univ_state'] if user_input['univ_state'] != "Select All" else None
@@ -433,10 +436,13 @@ elif page == "University Recommendation":
                     '📉 Acceptance Rate': f"{acceptance_rate}%",
                 })
             else:
+                # If data is missing, show a warning
                 st.warning(f"Details for {rec} not found.")
         
+        # Convert the list of university data into a pandas DataFrame
         if university_data_list:
             university_df = pd.DataFrame(university_data_list)
+            # Reset the index and start it from 1 instead of 0
             university_df.index = university_df.index + 1  
             st.table(university_df)
         else:
