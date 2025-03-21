@@ -65,8 +65,8 @@ def load_models():
         st.error("❌ Models directory not found.")
         return None
 
-    major_models_path = os.path.join(model_dir, "major_models")
-    university_models_path = os.path.join(model_dir, "university_models")
+    major_models_path = os.path.join(model_dir, "MODELS/major_models")
+    university_models_path = os.path.join(model_dir, "MODELS/university_models")
 
     required_files = [
         ("rf_specialization.pkl", major_models_path),
