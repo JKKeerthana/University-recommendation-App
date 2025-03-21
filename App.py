@@ -42,15 +42,21 @@ def download_and_extract_models():
         st.info("Extracting models...")
         try:
             with zipfile.ZipFile(model_zip_path, "r") as zip_ref:
-                zip_ref.extractall("MODELS")
+                # Fix: Extract files directly into MODELS/ (avoid nesting)
+                for member in zip_ref.namelist():
+                    # Remove top-level folder name if present
+                    new_member = os.path.relpath(member, start=zip_ref.namelist()[0].split('/')[0])
+                    target_path = os.path.join("MODELS", new_member)
+                    if not member.endswith('/'):  # Skip directories
+                        os.makedirs(os.path.dirname(target_path), exist_ok=True)
+                        with open(target_path, "wb") as f:
+                            f.write(zip_ref.read(member))
             os.remove(model_zip_path)
         except zipfile.BadZipFile:
             st.error("Downloaded file is not a valid ZIP. Please check the Google Drive file.")
             return None
 
-    # Handle nested folder
-    extracted_dir = os.path.join("MODELS", "MODELS")
-    return extracted_dir if os.path.exists(extracted_dir) else "MODELS"
+    return "MODELS"
 
 
 
