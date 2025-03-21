@@ -24,19 +24,21 @@ def load_data():
     return pd.read_csv('data/categorized_specializations.csv')
 
 
-# ---------------------------
-# Download and Extract Models
-# ---------------------------
+import os
+import zipfile
+import gdown
+import streamlit as st
+
 @st.cache_resource
 def download_and_extract_models():
     model_zip_path = "MODELS.zip"
-    model_dir = "MODELS"
-    gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"  # Your actual file ID
+    extract_to_path = "MODELS"  # Define a clear extraction directory
+    gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"
 
-    # If models already exist, skip download
-    if os.path.exists(model_dir) and os.path.isdir(model_dir):
+    # Skip download if already extracted
+    if os.path.exists(extract_to_path) and os.path.isdir(extract_to_path):
         st.success("✅ Models already exist. Skipping download.")
-        return model_dir
+        return extract_to_path
 
     st.info("📥 Downloading model files from Google Drive...")
     gdown.download(f"https://drive.google.com/uc?id={gdrive_file_id}", model_zip_path, quiet=False)
@@ -44,19 +46,29 @@ def download_and_extract_models():
     st.info("📂 Extracting models...")
     try:
         with zipfile.ZipFile(model_zip_path, "r") as zip_ref:
-            zip_ref.extractall()  # Extracts to the current directory
-        os.remove(model_zip_path)  # Remove ZIP after extraction
+            zip_ref.extractall(extract_to_path)  # Extract to MODELS directory
+
+        os.remove(model_zip_path)  # Cleanup ZIP file
         st.success("✅ Model extraction complete!")
+
     except zipfile.BadZipFile:
-        st.error("❌ Downloaded file is not a valid ZIP. Please check the Google Drive file.")
+        st.error("❌ Invalid ZIP file. Please check the Google Drive file.")
         return None
 
-    # Ensure extraction was successful
-    if not os.path.exists(model_dir):
-        st.error(f"❌ Extraction failed! '{model_dir}' directory not found.")
-        return None
+    # Debug: Print extracted files
+    extracted_files = os.listdir(extract_to_path)
+    st.write("📁 Extracted contents:", extracted_files)
 
-    return model_dir
+    # Ensure essential directories exist
+    required_dirs = ["major_models", "university_models"]
+    for subdir in required_dirs:
+        full_path = os.path.join(extract_to_path, subdir)
+        if not os.path.exists(full_path):
+            st.error(f"❌ Directory {full_path} not found. Extraction may have failed.")
+            return None
+
+    return extract_to_path
+
 
 # ---------------------------
 # Load Models
