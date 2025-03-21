@@ -32,21 +32,28 @@ import streamlit as st
 @st.cache_resource
 def download_and_extract_models():
     model_zip_path = "MODELS.zip"
-    extract_to_path = "MODELS"  # Define a clear extraction directory
+    extract_to_path = "MODELS"  # Define extraction directory
     gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"
 
-    # Skip download if already extracted
+    # Skip download if models are already extracted
     if os.path.exists(extract_to_path) and os.path.isdir(extract_to_path):
-        st.success("✅ Models already exist. Skipping download.")
-        return extract_to_path
+        if os.path.exists(os.path.join(extract_to_path, "major_models")) and \
+           os.path.exists(os.path.join(extract_to_path, "university_models")):
+            st.success("✅ Models already exist. Skipping download.")
+            return extract_to_path
 
     st.info("📥 Downloading model files from Google Drive...")
     gdown.download(f"https://drive.google.com/uc?id={gdrive_file_id}", model_zip_path, quiet=False)
 
+    # Verify if ZIP file is downloaded
+    if not os.path.exists(model_zip_path):
+        st.error("❌ Download failed. File MODELS.zip not found.")
+        return None
+
     st.info("📂 Extracting models...")
     try:
         with zipfile.ZipFile(model_zip_path, "r") as zip_ref:
-            zip_ref.extractall(extract_to_path)  # Extract to MODELS directory
+            zip_ref.extractall(extract_to_path)  # Extract models
 
         os.remove(model_zip_path)  # Cleanup ZIP file
         st.success("✅ Model extraction complete!")
@@ -68,7 +75,6 @@ def download_and_extract_models():
             return None
 
     return extract_to_path
-
 
 # ---------------------------
 # Load Models
