@@ -64,6 +64,13 @@ def load_models():
         st.error("❌ Models directory not found.")
         return None
 
+    # Debugging: List files in the directory to verify existence
+    try:
+        print("Files in major_models directory:", os.listdir(f"{model_dir}/major_models"))
+    except FileNotFoundError:
+        st.error(f"❌ Directory {model_dir}/major_models not found. Check if the extraction was successful.")
+        return None
+
     try:
         models = {
             "rf_specialization": joblib.load(f"{model_dir}/major_models/rf_specialization.pkl"),
@@ -90,6 +97,7 @@ def load_models():
     except Exception as e:
         st.error(f"❌ Error loading models: {e}")
         return None
+
 
 # Load models
 models = load_models()
