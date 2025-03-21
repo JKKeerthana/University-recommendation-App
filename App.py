@@ -47,7 +47,11 @@ def download_and_extract_models():
         except zipfile.BadZipFile:
             st.error("Downloaded file is not a valid ZIP. Please check the Google Drive file.")
             return None
-
+            # Look for nested 'MODELS' folder inside
+extracted_dir = os.path.join("MODELS", "MODELS")
+if os.path.exists(extracted_dir):
+    return extracted_dir
+else:
     return "MODELS"
 
 
