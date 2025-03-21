@@ -85,8 +85,8 @@ def load_models():
         return None
 
     # Assuming the extracted structure is: MODELS/major_models and MODELS/university_models
-    major_models_path = os.path.join(model_dir, "MODELS/major_models")
-    university_models_path = os.path.join(model_dir, "MODELS/university_models")
+    major_models_path = os.path.join(model_dir, "major_models")
+    university_models_path = os.path.join(model_dir, "university_models")
 
     required_files = [
         ("rf_specialization.pkl", major_models_path),
