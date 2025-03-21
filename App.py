@@ -23,13 +23,60 @@ from sklearn.decomposition import TruncatedSVD
 def load_data():
     return pd.read_csv('data/categorized_specializations.csv')
 
+
+# ---------------------------
+# Define File IDs for Each Model in Google Drive
+# ---------------------------
+model_files = {
+    "major_models": {
+        "knn_specialization": "1bwej-sPxU0CdTgtB5Fuu2uDwLZcy5R3d",
+        "rf_specialization": "16z_IrghbBi9O60maC8JvMR9wW_uGmD30",
+        "xgb_specialization": "1KbtVfbgn82BcbWY3LgIiOEHinFYZLfXZ",
+        "label_encoders_specialization": "10TCQ2WXjT4MA2nyc4UfXRHpAsgKei1P9",
+        "le_y_spec": "1Kaz6vFS9xACZqt-YJ7SBWnV0nSCxIy6Z",
+        "scaler_specialization": "1GdzYesp7LVOpfKosBuKNQ5UzpoV7hXCg",
+        "svd_specialization": "1KLuR71j2XVB9sqAhmWxwvgFKAxkPtDXl"
+    },
+    "university_models": {
+        "knn_univ": "1XGniImJU0klsAXgM6eqTUlrmKmKCDbVj",
+        "rf_university": "1kn5cQ_4qBeQInup1Ao5gYcTac0lCHvui",
+        "scaler_university": "1YsOV0xk6maZDuLrFEHMIGXLzPIhQhp_J",
+        "label_encoders_university": "1sC5uTcrxcUpOPXSKRj_H5sBCnsAkuf46",
+        "le_y_univ": "15Wt7eEAV2DpQFJUXxFjz_jNG-wmosBVx",
+        "one_hot_columns_university": "1VYm2At7iP0Fu31g8lHFHrCqd9MkBXwcA",
+        "svd_univ": "1XfCvLvClIMFAC27YeMxSQBBlicm_lTAv"
+    }
+}
+
+# ---------------------------
+# Function to Download Model Files
+# ---------------------------
+@st.cache_resource
+def download_models_from_drive():
+    os.makedirs("models/major_models", exist_ok=True)
+    os.makedirs("models/university_models", exist_ok=True)
+
+    for category, files in model_files.items():
+        for model_name, file_id in files.items():
+            file_path = f"models/{category}/{model_name}.pkl" if "xgb" not in model_name else f"models/{category}/{model_name}.json"
+
+            if not os.path.exists(file_path):  # Avoid re-downloading
+                st.info(f"Downloading {model_name}...")
+                gdown.download(f"https://drive.google.com/uc?id={file_id}", file_path, quiet=False)
+                # Debug: Print the path where the model is saved
+                st.write(f"Model {model_name} saved at {os.path.abspath(file_path)}")
+            else:
+                st.success(f"{model_name} already exists at {os.path.abspath(file_path)}")
+
+
 # ---------------------------
 # Function to Load Models
 # ---------------------------
 def load_models():
+    download_models_from_drive()  # Ensure models are downloaded first
     models = {}
 
-    # Define the local paths for the model files
+    # Define model paths
     model_paths = {
         "rf_specialization": "models/major_models/rf_specialization.pkl",
         "rf_university": "models/university_models/rf_university.pkl",
@@ -47,7 +94,7 @@ def load_models():
         "one_hot_columns_university": "models/university_models/one_hot_columns_university.pkl"
     }
 
-    # Load models from local files
+    # Load models if they exist
     for model_name, model_path in model_paths.items():
         if os.path.exists(model_path):
             print(f"Loading {model_name} from {model_path}")  # Debugging print statement
@@ -60,6 +107,7 @@ def load_models():
             print(f"⚠️ Model file {model_path} not found!")
 
     return models
+
 
 # Example usage: Load models and data
 models = load_models()
