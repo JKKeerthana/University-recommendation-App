@@ -29,7 +29,7 @@ def load_data():
 @st.cache_resource
 def download_and_extract_models():
     model_zip_path = "MODELS.zip"
-    extract_to_path = "."
+    extract_to_path = "MODELS"
     gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"
 
     # Check if models already exist
@@ -85,8 +85,8 @@ def load_models():
         return None
 
     # Assuming the extracted structure is: MODELS/major_models and MODELS/university_models
-    major_models_path = os.path.join(model_dir, "major_models")
-    university_models_path = os.path.join(model_dir, "university_models")
+    major_models_path = os.path.join(model_dir, "MODELS/major_models")
+    university_models_path = os.path.join(model_dir, "MODELS/university_models")
 
     required_files = [
         ("rf_specialization.pkl", major_models_path),
