@@ -24,18 +24,17 @@ def load_data():
     return pd.read_csv('data/categorized_specializations.csv')
 
 
-
 # ---------------------------
 # Download and Extract Models
 # ---------------------------
 @st.cache_resource
 def download_and_extract_models():
-    model_zip_path = "MODELS.zip"
-    model_dir = "MODELS"
-    gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"  # Your actual file ID
+    model_zip_path = "models.zip"  # Updated ZIP name
+    model_dir = "models_storage"   # Custom directory to extract models
+    gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"  # Your actual Google Drive file ID
 
     # If models already exist, skip download
-    if os.path.exists(model_dir):
+    if os.path.exists(model_dir) and os.path.isdir(model_dir):
         st.success("✅ Models already exist. Skipping download.")
         return model_dir
 
@@ -45,14 +44,23 @@ def download_and_extract_models():
     st.info("📂 Extracting models...")
     try:
         with zipfile.ZipFile(model_zip_path, "r") as zip_ref:
-            zip_ref.extractall(model_dir)
+            zip_ref.extractall(model_dir)  # Extracting to a specific folder
         os.remove(model_zip_path)  # Remove ZIP after extraction
         st.success("✅ Model extraction complete!")
     except zipfile.BadZipFile:
         st.error("❌ Downloaded file is not a valid ZIP. Please check the Google Drive file.")
         return None
 
+    # Debugging: Check if major_models & university_models exist
+    major_models_path = os.path.join(model_dir, "major_models")
+    university_models_path = os.path.join(model_dir, "university_models")
+
+    if not os.path.exists(major_models_path) or not os.path.exists(university_models_path):
+        st.error(f"❌ Model directories not found! Expected: {major_models_path} and {university_models_path}")
+        return None
+
     return model_dir
+
 
 # ---------------------------
 # Load Models
@@ -64,33 +72,37 @@ def load_models():
         st.error("❌ Models directory not found.")
         return None
 
-    # Debugging: List files in the directory to verify existence
+    major_models_path = os.path.join(model_dir, "major_models")
+    university_models_path = os.path.join(model_dir, "university_models")
+
+    # Debugging: List files in extracted directories
     try:
-        print("Files in major_models directory:", os.listdir(f"{model_dir}/major_models"))
+        st.info(f"📂 Major Models: {os.listdir(major_models_path)}")
+        st.info(f"📂 University Models: {os.listdir(university_models_path)}")
     except FileNotFoundError:
-        st.error(f"❌ Directory {model_dir}/major_models not found. Check if the extraction was successful.")
+        st.error(f"❌ Missing directories: {major_models_path} or {university_models_path}")
         return None
 
     try:
         models = {
-            "rf_specialization": joblib.load(f"{model_dir}/major_models/rf_specialization.pkl"),
-            "rf_university": joblib.load(f"{model_dir}/university_models/rf_university.pkl"),
+            "rf_specialization": joblib.load(os.path.join(major_models_path, "rf_specialization.pkl")),
+            "rf_university": joblib.load(os.path.join(university_models_path, "rf_university.pkl")),
             "xgb_specialization": xgb.XGBClassifier(),
-            "label_encoders_specialization": joblib.load(f"{model_dir}/major_models/label_encoders_specialization.pkl"),
-            "label_encoders_university": joblib.load(f"{model_dir}/university_models/label_encoders_university.pkl"),
-            "scaler_specialization": joblib.load(f"{model_dir}/major_models/scaler_specialization.pkl"),
-            "scaler_university": joblib.load(f"{model_dir}/university_models/scaler_university.pkl"),
-            "svd_specialization": joblib.load(f"{model_dir}/major_models/svd_specialization.pkl"),
-            "knn_specialization": joblib.load(f"{model_dir}/major_models/knn_specialization.pkl"),
-            "svd_university": joblib.load(f"{model_dir}/university_models/svd_univ.pkl"),
-            "knn_university": joblib.load(f"{model_dir}/university_models/knn_univ.pkl"),
-            "le_y_specialization": joblib.load(f"{model_dir}/major_models/le_y_spec.pkl"),
-            "le_y_university": joblib.load(f"{model_dir}/university_models/le_y_univ.pkl"),
-            "one_hot_columns_university": joblib.load(f"{model_dir}/university_models/one_hot_columns_university.pkl"),
+            "label_encoders_specialization": joblib.load(os.path.join(major_models_path, "label_encoders_specialization.pkl")),
+            "label_encoders_university": joblib.load(os.path.join(university_models_path, "label_encoders_university.pkl")),
+            "scaler_specialization": joblib.load(os.path.join(major_models_path, "scaler_specialization.pkl")),
+            "scaler_university": joblib.load(os.path.join(university_models_path, "scaler_university.pkl")),
+            "svd_specialization": joblib.load(os.path.join(major_models_path, "svd_specialization.pkl")),
+            "knn_specialization": joblib.load(os.path.join(major_models_path, "knn_specialization.pkl")),
+            "svd_university": joblib.load(os.path.join(university_models_path, "svd_univ.pkl")),
+            "knn_university": joblib.load(os.path.join(university_models_path, "knn_univ.pkl")),
+            "le_y_specialization": joblib.load(os.path.join(major_models_path, "le_y_spec.pkl")),
+            "le_y_university": joblib.load(os.path.join(university_models_path, "le_y_univ.pkl")),
+            "one_hot_columns_university": joblib.load(os.path.join(university_models_path, "one_hot_columns_university.pkl")),
         }
 
         # Load XGBoost model separately
-        models["xgb_specialization"].load_model(f"{model_dir}/major_models/xgb_specialization.json")
+        models["xgb_specialization"].load_model(os.path.join(major_models_path, "xgb_specialization.json"))
 
         st.success("✅ Models loaded successfully!")
         return models
@@ -99,11 +111,14 @@ def load_models():
         return None
 
 
-# Load models
+# ---------------------------
+# Execute Loading Process
+# ---------------------------
 models = load_models()
 if models is None:
     st.error("❌ Failed to load models. Exiting...")
     st.stop()
+
 
 
 # Load data
