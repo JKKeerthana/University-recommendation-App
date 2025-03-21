@@ -20,37 +20,55 @@ def load_data():
     return pd.read_csv('./data/categorized_specializations.csv')
 
 
-import os
-import gdown
+# ---------------------------
+# Define File IDs for Each Model in Google Drive
+# ---------------------------
+model_files = {
+    "major_models": {
+        "knn_specialization": "15hr04h1tQ1MIMxvSduqv0z0zaiXdzsJ0",
+        "rf_specialization": "1UgpYTwfBmvl8CXGJJLuO0_Wz4U9lyBnw",
+        "xgb_specialization": "1Bz9qdqnw92IkAy8Em79DCyBiuoj4Sgk5",
+        "label_encoders_specialization": "1X7chcXKBjXfQesZFZEVMlDn36tMhPg9q",
+        "le_y_specialization": "1sVRnXFCJdQz_iM37COCCCGOmQeY2kbng",
+        "scaler_specialization": "1NbIWl72g3bEU_JByWNNqeEhp8B3lKBIT",
+        "svd_specialization": "1_VUupZCfXIIed3I94U2YF9752as4Adlb"
+    },
+    "university_models": {
+        "knn_univ": "111O6cNIq003fHqWhKW1Vvll1BwiOxFLU",
+        "rf_university": "1uiZYKHmnVEPVr-W0eLZB-bWcCMBJE2zn",
+        "scaler_university": "1pM32313PKB2_wGAav-FtP3Uv5JjtcGGV",
+        "label_encoders_university": "1ASLYY48dNtkJKw137jC1Dq1SbA7Fll5i",
+        "le_y_university": "1ie4UvfXT06uzNmdbTDiebbCLxPV92Y1V",
+        "one_hot_columns_university": "129a9lrEoMBewwwxagorprG9nuKzh9iZn",
+        "svd_university": "1Ndeu__M9KL9GvEUJbiRIyCb7sYmMvL4M"
+    }
+}
 
 # ---------------------------
-# Function to Download Model Files from Google Drive Folders
+# Function to Download Model Files
 # ---------------------------
 @st.cache_resource
 def download_models_from_drive():
-    # Folder URLs from Google Drive (ensure these folders are shared publicly)
-    major_folder_url = "https://drive.google.com/drive/folders/1HxH7-e3ghoR0G4NmYwwiZMwkwfgy6n_f?usp=drive_link"
-    university_folder_url = "https://drive.google.com/drive/folders/1QNJ3IOwWihRQiE9wLbUhvppuaxETKQ72?usp=drive_link"
-    
-    # Create output directories if they don't exist
     os.makedirs("models/major_models", exist_ok=True)
     os.makedirs("models/university_models", exist_ok=True)
-    
-    # Download the entire folder using gdown
-    st.info("Downloading major models from Google Drive...")
-    gdown.download_folder(url=major_folder_url, output="models/major_models", quiet=False)
-    
-    st.info("Downloading university models from Google Drive...")
-    gdown.download_folder(url=university_folder_url, output="models/university_models", quiet=False)
+
+    for category, files in model_files.items():
+        for model_name, file_id in files.items():
+            file_path = f"models/{category}/{model_name}.pkl" if "xgb" not in model_name else f"models/{category}/{model_name}.json"
+
+            if not os.path.exists(file_path):  # Avoid re-downloading
+                st.info(f"Downloading {model_name}...")
+                gdown.download(f"https://drive.google.com/uc?id={file_id}", file_path, quiet=False)
+            else:
+                st.success(f"{model_name} already exists.")
+
 
 # ---------------------------
 # Function to Load Models
 # ---------------------------
-#@st.cache_resource
+@st.cache_resource
 def load_models():
-    # Download all model files from the folders
-    download_models_from_drive()
-    
+    download_models_from_drive()  # Ensure models are downloaded first
     models = {}
 
     # Define model paths
@@ -64,14 +82,14 @@ def load_models():
         "scaler_university": "models/university_models/scaler_university.pkl",
         "svd_specialization": "models/major_models/svd_specialization.pkl",
         "knn_specialization": "models/major_models/knn_specialization.pkl",
-        "svd_university": "models/university_models/svd_univ.pkl",
-        "knn_university": "models/university_models/knn_univ.pkl",
-        "le_y_specialization": "models/major_models/le_y_spec.pkl",
-        "le_y_university": "models/university_models/le_y_univ.pkl",
+        "svd_university": "models/university_models/svd_university.pkl",
+        "knn_university": "models/university_models/knn_university.pkl",
+        "le_y_specialization": "models/major_models/le_y_specialization.pkl",
+        "le_y_university": "models/university_models/le_y_university.pkl",
         "one_hot_columns_university": "models/university_models/one_hot_columns_university.pkl"
     }
-    
-    # Load models and check if files exist
+
+    # Load models if they exist
     for model_name, model_path in model_paths.items():
         if os.path.exists(model_path):
             print(f"Loading {model_name} from {model_path}")  # Debugging print statement
@@ -81,9 +99,10 @@ def load_models():
             else:
                 models[model_name] = joblib.load(model_path)  # Load other models with joblib
         else:
-            print(f"Model file {model_path} does not exist! Please check the file path.")
-    
+            print(f"⚠️ Model file {model_path} not found!")
+
     return models
+
 
 # Other functions (e.g., download_models_from_drive, preprocess_input, etc.) stay the same
 
