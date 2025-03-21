@@ -111,6 +111,7 @@ def load_models():
         st.error(f"❌ Missing model files: {missing_files}")
     else:
         st.success(f"All models saved")
+        st.write(f"🔍 Model directory: {model_dir}")
         return None
 
     try:
