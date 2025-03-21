@@ -33,7 +33,7 @@ import gdown
 @st.cache_resource
 def download_and_extract_models():
     model_zip_path = "MODELS.zip"
-    gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"  # Your actual file ID
+    gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"
 
     if not os.path.exists("MODELS"):
         st.info("Downloading model files from Google Drive using gdown...")
@@ -42,7 +42,20 @@ def download_and_extract_models():
         st.info("Extracting models...")
         try:
             with zipfile.ZipFile(model_zip_path, "r") as zip_ref:
-                zip_ref.extractall("MODELS")
+                # Check if all files are within a 'MODELS/' directory in the ZIP
+                members = zip_ref.namelist()
+                if all(m.startswith("MODELS/") for m in members):
+                    # Extract each file, stripping the 'MODELS/' prefix
+                    for member in members:
+                        if member.endswith('/'):
+                            continue  # Skip directories
+                        target_path = os.path.join("MODELS", member[len("MODELS/"):])
+                        os.makedirs(os.path.dirname(target_path), exist_ok=True)
+                        with zip_ref.open(member) as source, open(target_path, "wb") as target:
+                            target.write(source.read())
+                else:
+                    # Extract normally if no top-level 'MODELS' directory
+                    zip_ref.extractall("MODELS")
             os.remove(model_zip_path)
         except zipfile.BadZipFile:
             st.error("Downloaded file is not a valid ZIP. Please check the Google Drive file.")
