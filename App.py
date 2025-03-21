@@ -112,10 +112,9 @@ def load_models():
         # Load XGBoost model separately
         models["xgb_specialization"].load_model(os.path.join(major_models_path, "xgb_specialization.json"))
 
-        st.success("✅ Models loaded successfully!")
-        return models
+        st.write("Models loaded successfully!")  # Check if this prints
     except Exception as e:
-        st.error(f"❌ Error loading models: {e}")
+        st.write(f"Error loading model: {str(e)}")  # Catch and display the error
         return None
 
 
