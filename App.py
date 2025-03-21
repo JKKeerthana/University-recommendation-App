@@ -20,7 +20,7 @@ from sklearn.decomposition import TruncatedSVD
 # ---------------------------
 @st.cache_data
 def load_data():
-    return pd.read_csv('./data/categorized_specializations.csv')
+    return pd.read_csv('data/categorized_specializations.csv')
 
 
 # ---------------------------
@@ -28,22 +28,22 @@ def load_data():
 # ---------------------------
 model_files = {
     "major_models": {
-        "knn_specialization": "15hr04h1tQ1MIMxvSduqv0z0zaiXdzsJ0",
-        "rf_specialization": "1UgpYTwfBmvl8CXGJJLuO0_Wz4U9lyBnw",
-        "xgb_specialization": "1Bz9qdqnw92IkAy8Em79DCyBiuoj4Sgk5",
-        "label_encoders_specialization": "1X7chcXKBjXfQesZFZEVMlDn36tMhPg9q",
-        "le_y_specialization": "1sVRnXFCJdQz_iM37COCCCGOmQeY2kbng",
-        "scaler_specialization": "1NbIWl72g3bEU_JByWNNqeEhp8B3lKBIT",
-        "svd_specialization": "1_VUupZCfXIIed3I94U2YF9752as4Adlb"
+        "knn_specialization": "1IQNJkJZhooxp4t1tttyJoC6PCQ9iqQF7",
+        "rf_specialization": "1fSpRsvEH8qcnSwrPdib5v8bA8X7f_c0v",
+        "xgb_specialization": "12Aek2FdKkX_zx3vNoxCIJiJiTLJ8BSH2",
+        "label_encoders_specialization": "1fFnlPNWyybblxwV0Y6R7-wz_ci46097j",
+        "le_y_spec": "1BZWcV7zQFdax2Eq1UeGdpd_qE0riZDwx",
+        "scaler_specialization": "1-ASKE-_bR1-R2fSrmeyOygYHhSiceaBn",
+        "svd_specialization": "1K_Y6WdaJJxrluZx7PzyvvzCXVeSIiRzp"
     },
     "university_models": {
-        "knn_univ": "111O6cNIq003fHqWhKW1Vvll1BwiOxFLU",
-        "rf_university": "1uiZYKHmnVEPVr-W0eLZB-bWcCMBJE2zn",
-        "scaler_university": "1pM32313PKB2_wGAav-FtP3Uv5JjtcGGV",
-        "label_encoders_university": "1ASLYY48dNtkJKw137jC1Dq1SbA7Fll5i",
-        "le_y_university": "1ie4UvfXT06uzNmdbTDiebbCLxPV92Y1V",
-        "one_hot_columns_university": "129a9lrEoMBewwwxagorprG9nuKzh9iZn",
-        "svd_university": "1Ndeu__M9KL9GvEUJbiRIyCb7sYmMvL4M"
+        "knn_univ": "13a_yqW9LBRrzBH_kWbTnYcm1fk3DFOvl",
+        "rf_university": "1cZqe3_F0DGDPVk858dxR0s2VyK8AZG5z",
+        "scaler_university": "1gr-8DH74Pj4x3nhaqb7gkHNDE8YlkfY-",
+        "label_encoders_university": "1-_i8cT2k7sXDTeQUKddXQf9dmrN6JENr",
+        "le_y_univ": "1621N4WEPQ_76qtABp-FLbTwO7DRH7U7u",
+        "one_hot_columns_university": "1bcuARdLcUOcRDtvJ3huIQQNjaep8o0aG",
+        "svd_univ": "1hCIzCpMPbZiomSKOUr-dXJtDEMZPDXda"
     }
 }
 
@@ -85,10 +85,10 @@ def load_models():
         "scaler_university": "models/university_models/scaler_university.pkl",
         "svd_specialization": "models/major_models/svd_specialization.pkl",
         "knn_specialization": "models/major_models/knn_specialization.pkl",
-        "svd_university": "models/university_models/svd_university.pkl",
-        "knn_university": "models/university_models/knn_university.pkl",
-        "le_y_specialization": "models/major_models/le_y_specialization.pkl",
-        "le_y_university": "models/university_models/le_y_university.pkl",
+        "svd_university": "models/university_models/svd_univ.pkl",
+        "knn_university": "models/university_models/knn_univ.pkl",
+        "le_y_specialization": "models/major_models/le_y_spec.pkl",
+        "le_y_university": "models/university_models/le_y_univ.pkl",
         "one_hot_columns_university": "models/university_models/one_hot_columns_university.pkl"
     }
 
