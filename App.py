@@ -135,8 +135,11 @@ def load_models():
         st.success("✅ Models loaded successfully!")
         return models
     except Exception as e:
+        import traceback
         st.error(f"❌ Error loading models: {e}")
+        st.text(traceback.format_exc())
         return None
+
 
 
 # Load models
