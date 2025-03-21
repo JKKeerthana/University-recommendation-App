@@ -5,7 +5,6 @@
 import streamlit as st
 import joblib
 import os
-import requests
 import zipfile
 import gdown
 import pandas as pd
@@ -17,72 +16,44 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.decomposition import TruncatedSVD
 
 # ---------------------------
-# Load data and models
+# Load Data
 # ---------------------------
 @st.cache_data
 def load_data():
     return pd.read_csv('data/categorized_specializations.csv')
 
 
-import os
-import zipfile
-import gdown
-import streamlit as st
-
+# ---------------------------
+# Download & Extract Models
+# ---------------------------
 @st.cache_resource
 def download_and_extract_models():
     model_zip_path = "MODELS.zip"
-    extract_to_path = "MODELS"  # Define extraction directory
+    extract_to_path = "MODELS"
     gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"
 
-    # Skip download if models are already extracted
-    if os.path.exists(extract_to_path) and os.path.isdir(extract_to_path) and os.listdir(extract_to_path):
-        if os.path.exists(os.path.join(extract_to_path, "major_models")) and \
-           os.path.exists(os.path.join(extract_to_path, "university_models")):
-            st.success("✅ Models already exist. Skipping download.")
-            return extract_to_path
+    # Check if models already exist
+    if os.path.exists(extract_to_path) and os.path.isdir(extract_to_path):
+        return extract_to_path
 
+    # Download the model zip file
     st.info("📥 Downloading model files from Google Drive...")
-    gdown.download(f"https://drive.google.com/uc?id={gdrive_file_id}", model_zip_path, quiet=False, fuzzy=True)
+    url = f"https://drive.google.com/uc?export=download&id={gdrive_file_id}"
+    gdown.download(url, model_zip_path, quiet=False)
 
-    # Verify if ZIP file is downloaded
-    if not os.path.exists(model_zip_path):
-        st.error("❌ Download failed. File MODELS.zip not found.")
-        return None
-
-    if os.path.getsize(model_zip_path) < 1024:  # Example: check if file is too small
-    st.error("Download failed or incomplete. Please check the Google Drive file.")
-    return None
-
+    # Extract models
     st.info("📂 Extracting models...")
     try:
         with zipfile.ZipFile(model_zip_path, "r") as zip_ref:
             zip_ref.extractall(extract_to_path)
-        
-        if not os.path.exists(os.path.join(extract_to_path, "major_models")):
-            st.error("Extraction failed: major_models folder missing.")
-            return None
-
-        os.remove(model_zip_path)  # Cleanup ZIP file
+        os.remove(model_zip_path)  # Cleanup
         st.success("✅ Model extraction complete!")
-
     except zipfile.BadZipFile:
         st.error("❌ Invalid ZIP file. Please check the Google Drive file.")
         return None
 
-    # Debug: Print extracted files
-    extracted_files = os.listdir(extract_to_path)
-    st.write("📁 Extracted contents:", extracted_files)
-
-    # Ensure essential directories exist
-    required_dirs = ["major_models", "university_models"]
-    for subdir in required_dirs:
-        full_path = os.path.join(extract_to_path, subdir)
-        if not os.path.exists(full_path):
-            st.error(f"❌ Directory {full_path} not found. Extraction may have failed.")
-            return None
-
     return extract_to_path
+
 
 # ---------------------------
 # Load Models
@@ -94,15 +65,30 @@ def load_models():
         st.error("❌ Models directory not found.")
         return None
 
-    # Check extracted contents
     major_models_path = os.path.join(model_dir, "major_models")
     university_models_path = os.path.join(model_dir, "university_models")
 
-    if not os.path.exists(major_models_path):
-        st.error(f"❌ Directory {major_models_path} not found. Check if extraction was successful.")
-        return None
-    if not os.path.exists(university_models_path):
-        st.error(f"❌ Directory {university_models_path} not found. Check if extraction was successful.")
+    required_files = [
+        ("rf_specialization.pkl", major_models_path),
+        ("rf_university.pkl", university_models_path),
+        ("xgb_specialization.json", major_models_path),
+        ("label_encoders_specialization.pkl", major_models_path),
+        ("label_encoders_university.pkl", university_models_path),
+        ("scaler_specialization.pkl", major_models_path),
+        ("scaler_university.pkl", university_models_path),
+        ("svd_specialization.pkl", major_models_path),
+        ("knn_specialization.pkl", major_models_path),
+        ("svd_univ.pkl", university_models_path),
+        ("knn_univ.pkl", university_models_path),
+        ("le_y_spec.pkl", major_models_path),
+        ("le_y_univ.pkl", university_models_path),
+        ("one_hot_columns_university.pkl", university_models_path),
+    ]
+
+    # Verify all required model files exist
+    missing_files = [f"{path}/{file}" for file, path in required_files if not os.path.exists(os.path.join(path, file))]
+    if missing_files:
+        st.error(f"❌ Missing model files: {missing_files}")
         return None
 
     try:
