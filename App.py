@@ -69,8 +69,8 @@ def load_models():
         return None
 
     # Assuming the extracted structure is: MODELS/major_models and MODELS/university_models
-    major_models_path = os.path.join(model_dir, "major_models")
-    university_models_path = os.path.join(model_dir, "university_models")
+    major_models_path = os.path.join(model_dir, "MODELS/major_models")
+    university_models_path = os.path.join(model_dir, "MODELS/university_models")
 
     required_files = [
         ("rf_specialization.pkl", major_models_path),
@@ -93,6 +93,9 @@ def load_models():
     missing_files = [os.path.join(path, file) for file, path in required_files if not os.path.exists(os.path.join(path, file))]
     if missing_files:
         st.error(f"❌ Missing model files: {missing_files}")
+    else
+
+        st.error(f"All models saved")
         return None
 
     try:
