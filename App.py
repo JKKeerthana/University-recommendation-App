@@ -110,7 +110,7 @@ def load_models():
     if missing_files:
         st.error(f"❌ Missing model files: {missing_files}")
     else:
-        st.error(f"All models saved")
+        st.success(f"All models saved")
         return None
 
     try:
