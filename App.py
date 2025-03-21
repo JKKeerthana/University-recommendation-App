@@ -33,7 +33,7 @@ import gdown
 @st.cache_resource
 def download_and_extract_models():
     model_zip_path = "MODELS.zip"
-    gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"
+    gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"  # Your actual file ID
 
     if not os.path.exists("MODELS"):
         st.info("Downloading model files from Google Drive using gdown...")
@@ -48,17 +48,7 @@ def download_and_extract_models():
             st.error("Downloaded file is not a valid ZIP. Please check the Google Drive file.")
             return None
 
-    # Check if the models are directly inside MODELS or in a nested MODELS/MODELS directory
-    extracted_dir = "MODELS"
-    nested_dir = os.path.join("MODELS", "MODELS")
-    
-    # If the nested directory exists, use it
-    if os.path.exists(nested_dir):
-        extracted_dir = nested_dir
-    
-    return extracted_dir
-    
-
+    return "MODELS"
 
 
 # ---------------------------
