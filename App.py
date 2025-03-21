@@ -5,8 +5,8 @@
 import streamlit as st
 import joblib
 import os
-import os
-import gdown
+import requests
+import zipfile
 import pandas as pd
 import numpy as np
 import xgboost as xgb
@@ -15,7 +15,6 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.decomposition import TruncatedSVD
 
-
 # ---------------------------
 # Load data and models
 # ---------------------------
@@ -23,34 +22,28 @@ from sklearn.decomposition import TruncatedSVD
 def load_data():
     return pd.read_csv('data/categorized_specializations.csv')
 
-
-import requests
-import zipfile
-import joblib
-import streamlit as st
-import xgboost as xgb
-
-MODEL_ZIP_URL = "/MODELS.zip"
+# Model ZIP URL from GitHub
+MODEL_ZIP_URL = "https://github.com/JKKeerthana/University-recommendation-App/raw/main/MODELS.zip"
 
 # ---------------------------
 # Download and Extract Models
 # ---------------------------
 @st.cache_resource
 def download_and_extract_models():
-    model_zip_path = "https://github.com/JKKeerthana/University-recommendation-App/raw/main/MODELS.zip"
+    model_zip_path = "MODELS.zip"  # Path to save the zip file
 
     if not os.path.exists("MODELS"):  # Avoid redundant downloads
         st.info("Downloading model files...")
         response = requests.get(MODEL_ZIP_URL)
         with open(model_zip_path, "wb") as file:
             file.write(response.content)
-        
+
         # Extract ZIP file
         st.info("Extracting models...")
         with zipfile.ZipFile(model_zip_path, "r") as zip_ref:
-            zip_ref.extractall(".")  # Extracts "MODELS" folder
-        
-        os.remove(model_zip_path)  # Clean up ZIP file
+            zip_ref.extractall("MODELS")  # Extracts "MODELS" folder
+
+        os.remove(model_zip_path)  # Clean up the ZIP file after extraction
 
     return "MODELS"
 
@@ -60,7 +53,7 @@ def download_and_extract_models():
 @st.cache_resource
 def load_models():
     model_dir = download_and_extract_models()
-    
+
     models = {
         "rf_specialization": joblib.load(f"{model_dir}/major models/rf_specialization.pkl"),
         "rf_university": joblib.load(f"{model_dir}/university models/rf_university.pkl"),
@@ -77,12 +70,15 @@ def load_models():
         "le_y_university": joblib.load(f"{model_dir}/university models/le_y_univ.pkl"),
         "one_hot_columns_university": joblib.load(f"{model_dir}/university models/one_hot_columns_university.pkl"),
     }
-    
+
+    # Load the XGBoost model (specialization)
     models["xgb_specialization"].load_model(f"{model_dir}/major models/xgb_specialization.json")
     return models
 
+# Load models
 models = load_models()
 
+# Load data
 df = load_data()
 
 
