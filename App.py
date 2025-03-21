@@ -22,8 +22,8 @@ from sklearn.decomposition import TruncatedSVD
 def load_data():
     return pd.read_csv('data/categorized_specializations.csv')
 
-# Model ZIP URL from GitHub
-MODEL_ZIP_URL = "https://github.com/JKKeerthana/University-recommendation-App/raw/main/MODELS.zip"
+# Model ZIP URL from Google Drive (replace YOUR_FILE_ID with your actual file ID)
+MODEL_ZIP_URL = "https://drive.google.com/uc?export=download&id=1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"
 
 # ---------------------------
 # Download and Extract Models
@@ -33,10 +33,17 @@ def download_and_extract_models():
     model_zip_path = "MODELS.zip"  # Path to save the zip file
 
     if not os.path.exists("MODELS"):  # Avoid redundant downloads
-        st.info("Downloading model files...")
-        response = requests.get(MODEL_ZIP_URL)
-        with open(model_zip_path, "wb") as file:
-            file.write(response.content)
+        st.info("Downloading model files from Google Drive...")
+        response = requests.get(MODEL_ZIP_URL, stream=True)
+        # Check if the request was successful
+        if response.status_code == 200:
+            with open(model_zip_path, "wb") as file:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        file.write(chunk)
+        else:
+            st.error("Failed to download the model files. Check your Google Drive link and file permissions.")
+            return None
 
         # Extract ZIP file
         st.info("Extracting models...")
@@ -53,7 +60,10 @@ def download_and_extract_models():
 @st.cache_resource
 def load_models():
     model_dir = download_and_extract_models()
-    
+    if model_dir is None:
+        st.error("Models directory not found.")
+        return None
+
     # Debugging: Print the directories being used
     st.write(f"Model directory being used for loading files: {model_dir}")
     st.write(f"Expected model path for rf_specialization: {model_dir}/major_models/rf_specialization.pkl")
@@ -82,6 +92,9 @@ def load_models():
 
 # Load models
 models = load_models()
+if models is None:
+    st.error("Failed to load models. Exiting...")
+    st.stop()
 
 # Load data
 df = load_data()
