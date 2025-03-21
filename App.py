@@ -30,7 +30,7 @@ import joblib
 import streamlit as st
 import xgboost as xgb
 
-MODEL_ZIP_URL = "MODELS.zip"
+MODEL_ZIP_URL = "/MODELS.zip"
 
 # ---------------------------
 # Download and Extract Models
