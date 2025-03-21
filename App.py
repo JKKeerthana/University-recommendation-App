@@ -23,7 +23,7 @@ def load_data():
     return pd.read_csv('data/categorized_specializations.csv')
 
 # Model ZIP URL from GitHub
-MODEL_ZIP_URL = "https://github.com/JKKeerthana/University-recommendation-App/raw/main/MODELS.zip"
+MODEL_ZIP_URL = "https://github.com/JKKeerthana/University-recommendation-App/raw/refs/heads/main/MODELS.zip"
 
 # ---------------------------
 # Download and Extract Models
