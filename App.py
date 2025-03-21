@@ -110,44 +110,6 @@ models = load_models()
 df = load_data()
 
 
-    # Define model paths
-    model_paths = {
-        "rf_specialization": "models/major_models/rf_specialization.pkl",
-        "rf_university": "models/university_models/rf_university.pkl",
-        "xgb_specialization": "models/major_models/xgb_specialization.json",
-        "label_encoders_specialization": "models/major_models/label_encoders_specialization.pkl",
-        "label_encoders_university": "models/university_models/label_encoders_university.pkl",
-        "scaler_specialization": "models/major_models/scaler_specialization.pkl",
-        "scaler_university": "models/university_models/scaler_university.pkl",
-        "svd_specialization": "models/major_models/svd_specialization.pkl",
-        "knn_specialization": "models/major_models/knn_specialization.pkl",
-        "svd_university": "models/university_models/svd_univ.pkl",
-        "knn_university": "models/university_models/knn_univ.pkl",
-        "le_y_specialization": "models/major_models/le_y_spec.pkl",
-        "le_y_university": "models/university_models/le_y_univ.pkl",
-        "one_hot_columns_university": "models/university_models/one_hot_columns_university.pkl"
-    }
-
-    # Load models if they exist
-    for model_name, model_path in model_paths.items():
-        if os.path.exists(model_path):
-            print(f"Loading {model_name} from {model_path}")  # Debugging print statement
-            if model_name == "xgb_specialization":
-                models[model_name] = xgb.XGBClassifier()
-                models[model_name].load_model(model_path)  # Load XGBoost model from JSON
-            else:
-                models[model_name] = joblib.load(model_path)  # Load other models with joblib
-        else:
-            print(f"⚠️ Model file {model_path} not found!")
-
-    return models
-
-
-# Example usage: Load models and data
-models = load_models()
-df = load_data()
-
-
 st.markdown("""
     <style>
         body {
