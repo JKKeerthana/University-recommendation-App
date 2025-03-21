@@ -18,7 +18,7 @@ from sklearn.decomposition import TruncatedSVD
 # ---------------------------
 # Load Data
 # ---------------------------
-@st.cache_data
+#@st.cache_data
 def load_data():
     return pd.read_csv('data/categorized_specializations.csv')
 
@@ -26,7 +26,7 @@ def load_data():
 # ---------------------------
 # Download & Extract Models
 # ---------------------------
-@st.cache_resource
+#@st.cache_resource
 def download_and_extract_models():
     model_zip_path = "MODELS.zip"
     extract_to_path = "MODELS"
