@@ -7,6 +7,7 @@ import joblib
 import os
 import requests
 import zipfile
+import gdown
 import pandas as pd
 import numpy as np
 import xgboost as xgb
@@ -22,47 +23,36 @@ from sklearn.decomposition import TruncatedSVD
 def load_data():
     return pd.read_csv('data/categorized_specializations.csv')
 
-# Model ZIP URL from Google Drive (replace YOUR_FILE_ID with your actual file ID)
-MODEL_ZIP_URL = "https://drive.google.com/uc?export=download&id=1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"
+
 
 # ---------------------------
 # Download and Extract Models
 # ---------------------------
-import gdown
-
 @st.cache_resource
 def download_and_extract_models():
     model_zip_path = "MODELS.zip"
-    gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"
+    model_dir = "MODELS"
+    gdrive_file_id = "1TgULdbzFn9_MMfbFO4S_nMyEgn7HVrzI"  # Your actual file ID
 
-    if not os.path.exists("MODELS"):
-        st.info("Downloading model files from Google Drive using gdown...")
-        gdown.download(f"https://drive.google.com/uc?id={gdrive_file_id}", model_zip_path, quiet=False)
+    # If models already exist, skip download
+    if os.path.exists(model_dir):
+        st.success("✅ Models already exist. Skipping download.")
+        return model_dir
 
-        st.info("Extracting models...")
-        try:
-            with zipfile.ZipFile(model_zip_path, "r") as zip_ref:
-                # Check if all files are within a 'MODELS/' directory in the ZIP
-                members = zip_ref.namelist()
-                if all(m.startswith("MODELS/") for m in members):
-                    # Extract each file, stripping the 'MODELS/' prefix
-                    for member in members:
-                        if member.endswith('/'):
-                            continue  # Skip directories
-                        target_path = os.path.join("MODELS", member[len("MODELS/"):])
-                        os.makedirs(os.path.dirname(target_path), exist_ok=True)
-                        with zip_ref.open(member) as source, open(target_path, "wb") as target:
-                            target.write(source.read())
-                else:
-                    # Extract normally if no top-level 'MODELS' directory
-                    zip_ref.extractall("MODELS")
-            os.remove(model_zip_path)
-        except zipfile.BadZipFile:
-            st.error("Downloaded file is not a valid ZIP. Please check the Google Drive file.")
-            return None
+    st.info("📥 Downloading model files from Google Drive...")
+    gdown.download(f"https://drive.google.com/uc?id={gdrive_file_id}", model_zip_path, quiet=False)
 
-    return "MODELS"
+    st.info("📂 Extracting models...")
+    try:
+        with zipfile.ZipFile(model_zip_path, "r") as zip_ref:
+            zip_ref.extractall(model_dir)
+        os.remove(model_zip_path)  # Remove ZIP after extraction
+        st.success("✅ Model extraction complete!")
+    except zipfile.BadZipFile:
+        st.error("❌ Downloaded file is not a valid ZIP. Please check the Google Drive file.")
+        return None
 
+    return model_dir
 
 # ---------------------------
 # Load Models
@@ -71,41 +61,42 @@ def download_and_extract_models():
 def load_models():
     model_dir = download_and_extract_models()
     if model_dir is None:
-        st.error("Models directory not found.")
+        st.error("❌ Models directory not found.")
         return None
 
-    # Debugging: Print the directories being used
-    st.write("Contents of MODELS directory:", os.listdir("MODELS"))
-    st.write(f"Model directory being used for loading files: {model_dir}")
-    st.write(f"Expected model path for rf_specialization: {model_dir}/major_models/rf_specialization.pkl")
+    try:
+        models = {
+            "rf_specialization": joblib.load(f"{model_dir}/major_models/rf_specialization.pkl"),
+            "rf_university": joblib.load(f"{model_dir}/university_models/rf_university.pkl"),
+            "xgb_specialization": xgb.XGBClassifier(),
+            "label_encoders_specialization": joblib.load(f"{model_dir}/major_models/label_encoders_specialization.pkl"),
+            "label_encoders_university": joblib.load(f"{model_dir}/university_models/label_encoders_university.pkl"),
+            "scaler_specialization": joblib.load(f"{model_dir}/major_models/scaler_specialization.pkl"),
+            "scaler_university": joblib.load(f"{model_dir}/university_models/scaler_university.pkl"),
+            "svd_specialization": joblib.load(f"{model_dir}/major_models/svd_specialization.pkl"),
+            "knn_specialization": joblib.load(f"{model_dir}/major_models/knn_specialization.pkl"),
+            "svd_university": joblib.load(f"{model_dir}/university_models/svd_univ.pkl"),
+            "knn_university": joblib.load(f"{model_dir}/university_models/knn_univ.pkl"),
+            "le_y_specialization": joblib.load(f"{model_dir}/major_models/le_y_spec.pkl"),
+            "le_y_university": joblib.load(f"{model_dir}/university_models/le_y_univ.pkl"),
+            "one_hot_columns_university": joblib.load(f"{model_dir}/university_models/one_hot_columns_university.pkl"),
+        }
 
-    models = {
-        "rf_specialization": joblib.load(f"{model_dir}/major_models/rf_specialization.pkl"),
-        "rf_university": joblib.load(f"{model_dir}/university_models/rf_university.pkl"),
-        "xgb_specialization": xgb.XGBClassifier(),
-        "label_encoders_specialization": joblib.load(f"{model_dir}/major_models/label_encoders_specialization.pkl"),
-        "label_encoders_university": joblib.load(f"{model_dir}/university_models/label_encoders_university.pkl"),
-        "scaler_specialization": joblib.load(f"{model_dir}/major_models/scaler_specialization.pkl"),
-        "scaler_university": joblib.load(f"{model_dir}/university_models/scaler_university.pkl"),
-        "svd_specialization": joblib.load(f"{model_dir}/major_models/svd_specialization.pkl"),
-        "knn_specialization": joblib.load(f"{model_dir}/major_models/knn_specialization.pkl"),
-        "svd_university": joblib.load(f"{model_dir}/university_models/svd_univ.pkl"),
-        "knn_university": joblib.load(f"{model_dir}/university_models/knn_univ.pkl"),
-        "le_y_specialization": joblib.load(f"{model_dir}/major_models/le_y_spec.pkl"),
-        "le_y_university": joblib.load(f"{model_dir}/university_models/le_y_univ.pkl"),
-        "one_hot_columns_university": joblib.load(f"{model_dir}/university_models/one_hot_columns_university.pkl"),
-    }
+        # Load XGBoost model separately
+        models["xgb_specialization"].load_model(f"{model_dir}/major_models/xgb_specialization.json")
 
-    # Load the XGBoost model (specialization)
-    models["xgb_specialization"].load_model(f"{model_dir}/major_models/xgb_specialization.json")
-    
-    return models
+        st.success("✅ Models loaded successfully!")
+        return models
+    except Exception as e:
+        st.error(f"❌ Error loading models: {e}")
+        return None
 
 # Load models
 models = load_models()
 if models is None:
-    st.error("Failed to load models. Exiting...")
+    st.error("❌ Failed to load models. Exiting...")
     st.stop()
+
 
 # Load data
 df = load_data()
