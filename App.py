@@ -77,7 +77,7 @@ if extract_to_path:
 # ---------------------------
 # Load Models
 # ---------------------------
-#@st.cache_resource
+@st.cache_resource
 def load_models():
     model_dir = download_and_extract_models()
     if model_dir is None:
@@ -109,9 +109,9 @@ def load_models():
     missing_files = [os.path.join(path, file) for file, path in required_files if not os.path.exists(os.path.join(path, file))]
     if missing_files:
         st.error(f"❌ Missing model files: {missing_files}")
+        return None
     else:
         st.success(f"All models saved")
-        return None
 
     try:
         models = {
