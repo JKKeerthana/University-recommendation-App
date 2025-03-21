@@ -15,6 +15,7 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.decomposition import TruncatedSVD
 
+
 # ---------------------------
 # Load data and models
 # ---------------------------
@@ -22,59 +23,13 @@ from sklearn.decomposition import TruncatedSVD
 def load_data():
     return pd.read_csv('data/categorized_specializations.csv')
 
-
-# ---------------------------
-# Define File IDs for Each Model in Google Drive
-# ---------------------------
-model_files = {
-    "major_models": {
-        "knn_specialization": "1IQNJkJZhooxp4t1tttyJoC6PCQ9iqQF7",
-        "rf_specialization": "1fSpRsvEH8qcnSwrPdib5v8bA8X7f_c0v",
-        "xgb_specialization": "12Aek2FdKkX_zx3vNoxCIJiJiTLJ8BSH2",
-        "label_encoders_specialization": "1fFnlPNWyybblxwV0Y6R7-wz_ci46097j",
-        "le_y_spec": "1BZWcV7zQFdax2Eq1UeGdpd_qE0riZDwx",
-        "scaler_specialization": "1-ASKE-_bR1-R2fSrmeyOygYHhSiceaBn",
-        "svd_specialization": "1K_Y6WdaJJxrluZx7PzyvvzCXVeSIiRzp"
-    },
-    "university_models": {
-        "knn_univ": "13a_yqW9LBRrzBH_kWbTnYcm1fk3DFOvl",
-        "rf_university": "1cZqe3_F0DGDPVk858dxR0s2VyK8AZG5z",
-        "scaler_university": "1gr-8DH74Pj4x3nhaqb7gkHNDE8YlkfY-",
-        "label_encoders_university": "1-_i8cT2k7sXDTeQUKddXQf9dmrN6JENr",
-        "le_y_univ": "1621N4WEPQ_76qtABp-FLbTwO7DRH7U7u",
-        "one_hot_columns_university": "1bcuARdLcUOcRDtvJ3huIQQNjaep8o0aG",
-        "svd_univ": "1hCIzCpMPbZiomSKOUr-dXJtDEMZPDXda"
-    }
-}
-
-# ---------------------------
-# Function to Download Model Files
-# ---------------------------
-@st.cache_resource
-def download_models_from_drive():
-    os.makedirs("models/major_models", exist_ok=True)
-    os.makedirs("models/university_models", exist_ok=True)
-
-    for category, files in model_files.items():
-        for model_name, file_id in files.items():
-            file_path = f"models/{category}/{model_name}.pkl" if "xgb" not in model_name else f"models/{category}/{model_name}.json"
-
-            if not os.path.exists(file_path):  # Avoid re-downloading
-                st.info(f"Downloading {model_name}...")
-                gdown.download(f"https://drive.google.com/uc?id={file_id}", file_path, quiet=False)
-            else:
-                st.success(f"{model_name} already exists.")
-
-
 # ---------------------------
 # Function to Load Models
 # ---------------------------
-#@st.cache_resource
 def load_models():
-    download_models_from_drive()  # Ensure models are downloaded first
     models = {}
 
-    # Define model paths
+    # Define the local paths for the model files
     model_paths = {
         "rf_specialization": "models/major_models/rf_specialization.pkl",
         "rf_university": "models/university_models/rf_university.pkl",
@@ -92,7 +47,7 @@ def load_models():
         "one_hot_columns_university": "models/university_models/one_hot_columns_university.pkl"
     }
 
-    # Load models if they exist
+    # Load models from local files
     for model_name, model_path in model_paths.items():
         if os.path.exists(model_path):
             print(f"Loading {model_name} from {model_path}")  # Debugging print statement
@@ -105,9 +60,6 @@ def load_models():
             print(f"⚠️ Model file {model_path} not found!")
 
     return models
-
-
-# Other functions (e.g., download_models_from_drive, preprocess_input, etc.) stay the same
 
 # Example usage: Load models and data
 models = load_models()
