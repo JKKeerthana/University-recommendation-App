@@ -55,24 +55,24 @@ def load_models():
     model_dir = download_and_extract_models()
 
     models = {
-        "rf_specialization": joblib.load(f"{model_dir}/major models/rf_specialization.pkl"),
-        "rf_university": joblib.load(f"{model_dir}/university models/rf_university.pkl"),
+        "rf_specialization": joblib.load(f"{model_dir}/major_models/rf_specialization.pkl"),
+        "rf_university": joblib.load(f"{model_dir}/university_models/rf_university.pkl"),
         "xgb_specialization": xgb.XGBClassifier(),
-        "label_encoders_specialization": joblib.load(f"{model_dir}/major models/label_encoders_specialization.pkl"),
-        "label_encoders_university": joblib.load(f"{model_dir}/university models/label_encoders_university.pkl"),
-        "scaler_specialization": joblib.load(f"{model_dir}/major models/scaler_specialization.pkl"),
-        "scaler_university": joblib.load(f"{model_dir}/university models/scaler_university.pkl"),
-        "svd_specialization": joblib.load(f"{model_dir}/major models/svd_specialization.pkl"),
-        "knn_specialization": joblib.load(f"{model_dir}/major models/knn_specialization.pkl"),
-        "svd_university": joblib.load(f"{model_dir}/university models/svd_univ.pkl"),
-        "knn_university": joblib.load(f"{model_dir}/university models/knn_univ.pkl"),
-        "le_y_specialization": joblib.load(f"{model_dir}/major models/le_y_spec.pkl"),
-        "le_y_university": joblib.load(f"{model_dir}/university models/le_y_univ.pkl"),
-        "one_hot_columns_university": joblib.load(f"{model_dir}/university models/one_hot_columns_university.pkl"),
+        "label_encoders_specialization": joblib.load(f"{model_dir}/major_models/label_encoders_specialization.pkl"),
+        "label_encoders_university": joblib.load(f"{model_dir}/university_models/label_encoders_university.pkl"),
+        "scaler_specialization": joblib.load(f"{model_dir}/major_models/scaler_specialization.pkl"),
+        "scaler_university": joblib.load(f"{model_dir}/university_models/scaler_university.pkl"),
+        "svd_specialization": joblib.load(f"{model_dir}/major_models/svd_specialization.pkl"),
+        "knn_specialization": joblib.load(f"{model_dir}/major_models/knn_specialization.pkl"),
+        "svd_university": joblib.load(f"{model_dir}/university_models/svd_univ.pkl"),
+        "knn_university": joblib.load(f"{model_dir}/university_models/knn_univ.pkl"),
+        "le_y_specialization": joblib.load(f"{model_dir}/major_models/le_y_spec.pkl"),
+        "le_y_university": joblib.load(f"{model_dir}/university_models/le_y_univ.pkl"),
+        "one_hot_columns_university": joblib.load(f"{model_dir}/university_models/one_hot_columns_university.pkl"),
     }
 
     # Load the XGBoost model (specialization)
-    models["xgb_specialization"].load_model(f"{model_dir}/major models/xgb_specialization.json")
+    models["xgb_specialization"].load_model(f"{model_dir}/major_models/xgb_specialization.json")
     return models
 
 # Load models
