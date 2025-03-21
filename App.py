@@ -23,7 +23,7 @@ def load_data():
     return pd.read_csv('data/categorized_specializations.csv')
 
 # Model ZIP URL from GitHub
-MODEL_ZIP_URL = "https://github.com/JKKeerthana/University-recommendation-App/raw/refs/heads/main/MODELS.zip"
+MODEL_ZIP_URL = "https://github.com/JKKeerthana/University-recommendation-App/raw/main/MODELS.zip"
 
 # ---------------------------
 # Download and Extract Models
@@ -53,6 +53,10 @@ def download_and_extract_models():
 @st.cache_resource
 def load_models():
     model_dir = download_and_extract_models()
+    
+    # Debugging: Print the directories being used
+    st.write(f"Model directory being used for loading files: {model_dir}")
+    st.write(f"Expected model path for rf_specialization: {model_dir}/major_models/rf_specialization.pkl")
 
     models = {
         "rf_specialization": joblib.load(f"{model_dir}/major_models/rf_specialization.pkl"),
@@ -73,6 +77,7 @@ def load_models():
 
     # Load the XGBoost model (specialization)
     models["xgb_specialization"].load_model(f"{model_dir}/major_models/xgb_specialization.json")
+    
     return models
 
 # Load models
@@ -80,6 +85,8 @@ models = load_models()
 
 # Load data
 df = load_data()
+
+
 
 
 st.markdown("""
