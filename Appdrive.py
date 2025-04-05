@@ -114,7 +114,7 @@ def load_models():
         # Load the XGBoost model
         models["xgb_specialization"].load_model(os.path.join(major_path, "xgb_specialization.json"))
 
-        st.success("✅ All models loaded successfully.")
+        #st.success("✅ All models loaded successfully.")
         return models
 
     except Exception as e:
