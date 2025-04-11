@@ -130,6 +130,9 @@ def load_university_models():
         return None
         
 df = load_data()
+
+page = st.sidebar.radio("Select a Page", ["Home", "Major Recommendation", "University Recommendation"])
+
 if page == "Major Recommendation":
     models = load_specialization_models()
 elif page == "University Recommendation":
@@ -325,8 +328,6 @@ def display_specialization_stats(specialization, df):
 # ---------------------------
 st.title("🎓 University & Major Recommender System")
 # Navigation Sidebar
-page = st.sidebar.radio("Select a Page", ["Home", "Major Recommendation", "University Recommendation"])
-
 if page == "Home":
     st.header("Welcome to the Recommender System")
     st.write("""
