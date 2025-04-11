@@ -114,7 +114,7 @@ def load_models():
         # Load the XGBoost model
         models["xgb_specialization"].load_model(os.path.join(major_path, "xgb_specialization.json"))
 
-        #st.success("✅ All models loaded successfully.")
+        # st.success("✅ All models loaded successfully.")
         return models
 
     except Exception as e:
@@ -128,36 +128,55 @@ models = load_models()
 
 st.markdown("""
     <style>
-        body {
-            background-color: #1A1A2E; /* Dark navy blue */
-            color: white; /* Light gray text */
-        }
         .stApp {
-            background-color: #1A1A2E;
+            background-color: #f0f4f8;
+            color: #212529;
+            font-family: 'Segoe UI', sans-serif;
         }
-        .stMarkdown {
-            color: white;
+
+        h1, h2, h3, h4, h5, h6 {
+            color: #1a1a2e;
         }
-        .stDataFrame, .stTable {
-            background-color: #16213E; /* Slightly lighter blue */
-            color: white;
+
+        .stMarkdown p {
+            color: #343a40;
+        }
+
+        .css-6qob1r {
+            background-color: #ffffff !important;
+            color: #212529;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .stSelectbox, .stTextInput, .stNumberInput, .stSlider, .stRadio {
+            background-color: #e9f0f5 !important;
+            color: #212529 !important;
             border-radius: 10px;
-            padding: 10px;
+            border: 1px solid #cbd5e1;
         }
+
         .stButton > button {
-            background-color: #0F3460; /* Deep blue */
+            background-color: #3b82f6;
             color: white;
-            border-radius: 8px;
-            padding: 10px 15px;
-            font-size: 16px;
+            font-weight: 500;
+            border-radius: 10px;
+            border: none;
+            padding: 10px 20px;
         }
+
         .stButton > button:hover {
-            background-color: #533483; /* Purple hover effect */
+            background-color: #2563eb;
         }
-        .stSelectbox, .stTextInput, .stNumberInput, .stRadio, .stSlider {
-            background-color: #16213E !important;
-            color: white !important;
-            border-radius: 8px;
+
+        .stDataFrame, .stTable {
+            background-color: white;
+            color: #212529;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        .block-container {
+            padding: 2rem 3rem;
         }
     </style>
 """, unsafe_allow_html=True)
