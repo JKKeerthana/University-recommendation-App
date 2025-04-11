@@ -130,7 +130,11 @@ def load_university_models():
         return None
         
 df = load_data()
-models = load_models()
+if page == "Major Recommendation":
+    models = load_specialization_models()
+elif page == "University Recommendation":
+    models = load_university_models()
+
 
 
 
