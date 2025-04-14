@@ -322,6 +322,7 @@ if page == "Home":
 
 # Streamlit UI for Course Recommendation
 elif page == "Major Recommendation":
+    models = load_specialization_models()
     st.header("📌 Major Recommendation")
     user_input = {
         "major": st.selectbox("Major", sorted(df['major'].unique())),
@@ -345,7 +346,6 @@ elif page == "Major Recommendation":
     )
     
     if st.button("🔍 Recommend Major"):
-        models = load_specialization_models()
         recs = hybrid_recommendation(
             input_df_spec, 
             models['rf_specialization'][0], 
@@ -365,6 +365,7 @@ elif page == "Major Recommendation":
 
 
 elif page == "University Recommendation":
+    models = load_university_models()
     st.header("🏫 University Recommendation")
     user_input = {
         "ugCollege": st.selectbox("Undergraduate College", sorted(df['ugCollege'].dropna().unique())),
@@ -388,7 +389,6 @@ elif page == "University Recommendation":
     )
     
     if st.button("🔍 Recommend Universities"):
-        models = load_university_models()
         # Extract the Random Forest model from the loaded dictionary.
         # (In training, rf_university.pkl was saved as a dict with key "Random Forest".)
         rf_university_model = models["rf_university"]["Random Forest"][0]
