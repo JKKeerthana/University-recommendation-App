@@ -21,14 +21,15 @@ import gdown
 # ---------------------------
 # Google Drive File Mapping
 # ---------------------------
-GDRIVE_FILES = {
+SPECIALIZATION_FILES = {
     "major_models_compressed/rf_specialization.pkl": "1XOdLFdopWRHLbIoFWQUzclbkKkkwNS2b",
     "major_models_compressed/xgb_specialization.json": "11-XSs7T0A1FUpys9iXg3-lL-tGnQzngr",
     "major_models_compressed/label_encoders_specialization.pkl": "12WYx5RlLCYYaEJJ0VKijTiXY1VOt7IU0",
     "major_models_compressed/scaler_specialization.pkl": "1INH06qnZi8T37ADf1DfLJ6P7Kz1SkcLs",
     "major_models_compressed/cf_model_spec.pkl": "1HwfEPnC6KhSlDPP0Lnd4kuhsui5EE6PI",
     "major_models_compressed/le_y_spec.pkl": "1uAa_N9JRi8T6a4Phs1UtMCpBU2pX9euN",
-
+}
+UNIVERSITY_FILES = {
     "university_models_compressed/rf_university.pkl": "1e2z_75uvh0dL-UnpoY7b6HT98EqEVoaG",
     "university_models_compressed/label_encoders_university.pkl": "1JEQQqHEySZJmvKjqQh4Dw61fNI2oemW2",
     "university_models_compressed/scaler_university.pkl": "10Skhns2I1bechXG4mf6PpJFnN_LxHSXi",
@@ -69,7 +70,7 @@ def download_models_from_drive(file_map, base_dir="modelsC"):
 # ---------------------------
 @st.cache_resource
 def load_specialization_models():
-    model_dir = download_models_from_drive(GDRIVE_FILES)
+    model_dir = download_models_from_drive(SPECIALIZATION_FILES)
     major_path = os.path.join(model_dir, "major_models_compressed")
     try:
         models = {
@@ -91,7 +92,7 @@ def load_specialization_models():
 # ---------------------------
 @st.cache_resource
 def load_university_models():
-    model_dir = download_models_from_drive(GDRIVE_FILES)
+    model_dir = download_models_from_drive(UNIVERSITY_FILES)
     university_path = os.path.join(model_dir, "university_models_compressed")
     try:
         models = {
