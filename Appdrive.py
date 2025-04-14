@@ -86,14 +86,13 @@ def download_models_from_drive(file_map, base_dir="modelsC"):
                 gdown.download(url, full_path, quiet=False)
     return base_dir
 
-
+# ---------------------------
+# Load Specialization Models
+# ---------------------------
 @st.cache_resource
-def load_models():
+def load_specialization_models():
     model_dir = download_models_from_drive(GDRIVE_FILES)
-
     major_path = os.path.join(model_dir, "major_models_compressed")
-    university_path = os.path.join(model_dir, "university_models_compressed")
-
     try:
         models = {
             "rf_specialization": joblib.load(os.path.join(major_path, "rf_specialization.pkl")),
@@ -102,7 +101,22 @@ def load_models():
             "scaler_specialization": joblib.load(os.path.join(major_path, "scaler_specialization.pkl")),
             "cf_model_spec": joblib.load(os.path.join(major_path, "cf_model_spec.pkl")),
             "le_y_specialization": joblib.load(os.path.join(major_path, "le_y_spec.pkl")),
+        }
+        models["xgb_specialization"].load_model(os.path.join(major_path, "xgb_specialization.json"))
+        return models
+    except Exception as e:
+        st.error(f"❌ Error loading specialization models: {e}")
+        return None
 
+# ---------------------------
+# Load University Models
+# ---------------------------
+@st.cache_resource
+def load_university_models():
+    model_dir = download_models_from_drive(GDRIVE_FILES)
+    university_path = os.path.join(model_dir, "university_models_compressed")
+    try:
+        models = {
             "rf_university": joblib.load(os.path.join(university_path, "rf_university.pkl")),
             "label_encoders_university": joblib.load(os.path.join(university_path, "label_encoders_university.pkl")),
             "scaler_university": joblib.load(os.path.join(university_path, "scaler_university.pkl")),
@@ -110,17 +124,19 @@ def load_models():
             "le_y_university": joblib.load(os.path.join(university_path, "le_y_univ.pkl")),
             "one_hot_columns_university": joblib.load(os.path.join(university_path, "one_hot_columns_university.pkl")),
         }
-
-        # Load the XGBoost model
-        models["xgb_specialization"].load_model(os.path.join(major_path, "xgb_specialization.json"))
         return models
-
     except Exception as e:
-        st.error(f"❌ Error loading models: {e}")
+        st.error(f"❌ Error loading university models: {e}")
         return None
         
 df = load_data()
-models = load_models()
+
+page = st.sidebar.radio("Select a Page", ["Home", "Major Recommendation", "University Recommendation"])
+
+if page == "Major Recommendation":
+    models = load_specialization_models()
+elif page == "University Recommendation":
+    models = load_university_models()
 
 
 
