@@ -112,11 +112,11 @@ df = load_data()
 
 page = st.sidebar.radio("Select a Page", ["Home", "Major Recommendation", "University Recommendation"])
 
-models = None
-if page == "Major Recommendation":
-    models = load_specialization_models()
-elif page == "University Recommendation":
-    models = load_university_models()
+#models = None
+#if page == "Major Recommendation":
+#    models = load_specialization_models()
+#elif page == "University Recommendation":
+#    models = load_university_models()
 
 
 
@@ -345,6 +345,7 @@ elif page == "Major Recommendation":
     )
     
     if st.button("🔍 Recommend Major"):
+        models = load_specialization_models()
         recs = hybrid_recommendation(
             input_df_spec, 
             models['rf_specialization'][0], 
@@ -387,6 +388,7 @@ elif page == "University Recommendation":
     )
     
     if st.button("🔍 Recommend Universities"):
+        models = load_university_models()
         # Extract the Random Forest model from the loaded dictionary.
         # (In training, rf_university.pkl was saved as a dict with key "Random Forest".)
         rf_university_model = models["rf_university"]["Random Forest"][0]
