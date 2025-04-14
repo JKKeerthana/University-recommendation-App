@@ -8,6 +8,10 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 class MemoryBasedCF:
+    """
+    Memory-based Collaborative Filtering using cosine similarity.
+    The model is built on a pivot table of users and items (universities or specializations) with normalized ratings.
+    """
     def __init__(self, pivot):
         self.pivot = pivot
         self.similarity = cosine_similarity(pivot)
@@ -20,8 +24,14 @@ class MemoryBasedCF:
             sim_scores = self.similarity[idx]
         else:
             sim_scores = np.ones(len(self.user_ids)) / len(self.user_ids)
+        
         weighted_sum = np.dot(sim_scores, self.pivot.values)
-        return weighted_sum / weighted_sum.sum() if weighted_sum.sum() > 0 else weighted_sum
+        if weighted_sum.sum() > 0:
+            preds = weighted_sum / weighted_sum.sum()
+        else:
+            preds = weighted_sum
+        return preds
+
 
 
 # In[ ]:
