@@ -2,3 +2,4 @@ gdown
 scikit-learn==1.6.1
 streamlit
 xgboost==2.1.4
+requests 
