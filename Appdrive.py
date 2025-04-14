@@ -111,6 +111,7 @@ df = load_data()
 
 page = st.sidebar.radio("Select a Page", ["Home", "Major Recommendation", "University Recommendation"])
 
+models = None
 if page == "Major Recommendation":
     models = load_specialization_models()
 elif page == "University Recommendation":
