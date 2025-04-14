@@ -329,7 +329,7 @@ def display_specialization_stats(specialization, df):
 # ---------------------------
 st.title("🎓 University & Major Recommender System")
 # Navigation Sidebar
-page = st.sidebar.radio("Select a Page", ["Home", "Major Recommendation", "University Recommendation"])
+#page = st.sidebar.radio("Select a Page", ["Home", "Major Recommendation", "University Recommendation"])
 
 if page == "Home":
     st.header("Welcome to the Recommender System")
