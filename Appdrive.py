@@ -48,22 +48,30 @@ def load_data():
 class MemoryBasedCF:
     """
     Memory-based Collaborative Filtering using cosine similarity.
-    The model is built on a pivot table of users and items (universities or specializations) with normalized ratings.
+    The model is built on a pivot table of users and items (universities) with normalized ratings.
     """
     def __init__(self, pivot):
         self.pivot = pivot
+        # Compute cosine similarity between all users in the pivot table.
         self.similarity = cosine_similarity(pivot)
         self.user_ids = list(pivot.index)
         self.item_ids = list(pivot.columns)
 
     def predict(self, input_user):
+        """
+        Given a user name, computes a weighted average of ratings from similar users.
+        Returns a probability distribution over items.
+        """
         if input_user in self.user_ids:
             idx = self.user_ids.index(input_user)
             sim_scores = self.similarity[idx]
         else:
+            # If user not found, assume equal similarity.
             sim_scores = np.ones(len(self.user_ids)) / len(self.user_ids)
         
+        # Weighted sum of ratings from similar users.
         weighted_sum = np.dot(sim_scores, self.pivot.values)
+        # Normalize the predictions
         if weighted_sum.sum() > 0:
             preds = weighted_sum / weighted_sum.sum()
         else:
