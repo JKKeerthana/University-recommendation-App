@@ -33,6 +33,15 @@ def download_and_extract_models():
                 st.stop()
     return extract_path
 
+def show_zip_contents():
+    url = "https://huggingface.co/Jkkeer/univ-recommender-models/resolve/main/models.zip"
+    r = requests.get(url)
+    z = zipfile.ZipFile(io.BytesIO(r.content))
+    st.write("📁 Files in models.zip:")
+    for name in z.namelist():
+        st.text(name)
+
+
 @st.cache_data
 def load_data():
     return pd.read_csv('./data/categorized_specializations.csv')
