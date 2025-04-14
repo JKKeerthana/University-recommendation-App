@@ -15,28 +15,26 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.decomposition import TruncatedSVD
 
 
-import os
-import gdown
 
-# ---------------------------
-# Google Drive File Mapping
-# ---------------------------
-SPECIALIZATION_FILES = {
-    "major_models_compressed/rf_specialization.pkl": "1XOdLFdopWRHLbIoFWQUzclbkKkkwNS2b",
-    "major_models_compressed/xgb_specialization.json": "11-XSs7T0A1FUpys9iXg3-lL-tGnQzngr",
-    "major_models_compressed/label_encoders_specialization.pkl": "12WYx5RlLCYYaEJJ0VKijTiXY1VOt7IU0",
-    "major_models_compressed/scaler_specialization.pkl": "1INH06qnZi8T37ADf1DfLJ6P7Kz1SkcLs",
-    "major_models_compressed/cf_model_spec.pkl": "1HwfEPnC6KhSlDPP0Lnd4kuhsui5EE6PI",
-    "major_models_compressed/le_y_spec.pkl": "1uAa_N9JRi8T6a4Phs1UtMCpBU2pX9euN",
-}
-UNIVERSITY_FILES = {
-    "university_models_compressed/rf_university.pkl": "1e2z_75uvh0dL-UnpoY7b6HT98EqEVoaG",
-    "university_models_compressed/label_encoders_university.pkl": "1JEQQqHEySZJmvKjqQh4Dw61fNI2oemW2",
-    "university_models_compressed/scaler_university.pkl": "10Skhns2I1bechXG4mf6PpJFnN_LxHSXi",
-    "university_models_compressed/cf_model_memory.pkl": "1rC7qaT3bHVjL2lcDMRMNtEzwCt331G6V",
-    "university_models_compressed/le_y_univ.pkl": "14aya7tNcF96Pes7TncygmoWEHCddiDUM",
-    "university_models_compressed/one_hot_columns_university.pkl": "1v3uh_-ZzZDWOMeEH_vY0Xsbg57NVdgV8",
-}
+import requests, zipfile, io, os
+
+@st.cache_resource
+def download_and_extract_models():
+    url = "https://huggingface.co/Jkkeer/univ-recommender-models/resolve/main/models.zip"
+    extract_path = "models"
+
+    if not os.path.exists(extract_path):
+        os.makedirs(extract_path, exist_ok=True)
+        st.info("📦 Downloading models.zip from Hugging Face...")
+        with st.spinner("Unzipping models..."):
+            response = requests.get(url)
+            if response.status_code == 200:
+                z = zipfile.ZipFile(io.BytesIO(response.content))
+                z.extractall(extract_path)
+            else:
+                st.error("❌ Failed to download from Hugging Face.")
+                st.stop()
+    return extract_path
 
 
 # ---------------------------
@@ -49,28 +47,12 @@ def load_data():
 from memory_cf import MemoryBasedCF
 
 
-
-# ---------------------------
-# Function to Load Models
-# ---------------------------
-@st.cache_resource
-def download_models_from_drive(file_map, base_dir="modelsC"):
-    os.makedirs(base_dir, exist_ok=True)
-    for rel_path, file_id in file_map.items():
-        full_path = os.path.join(base_dir, rel_path)
-        if not os.path.exists(full_path):
-            os.makedirs(os.path.dirname(full_path), exist_ok=True)
-            url = f"https://drive.google.com/uc?id={file_id}"
-            with st.spinner(f"📥 Downloading {rel_path}..."):
-                gdown.download(url, full_path, quiet=False)
-    return base_dir
-
 # ---------------------------
 # Load Specialization Models
 # ---------------------------
 @st.cache_resource
 def load_specialization_models():
-    model_dir = download_models_from_drive(SPECIALIZATION_FILES)
+    model_dir = download_and_extract_models()
     major_path = os.path.join(model_dir, "major_models_compressed")
     try:
         models = {
@@ -92,7 +74,7 @@ def load_specialization_models():
 # ---------------------------
 @st.cache_resource
 def load_university_models():
-    model_dir = download_models_from_drive(UNIVERSITY_FILES)
+    model_dir = download_and_extract_models()
     university_path = os.path.join(model_dir, "university_models_compressed")
     try:
         models = {
