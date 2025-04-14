@@ -13,16 +13,13 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import NearestNeighbors
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.decomposition import TruncatedSVD
-
-
-
 import requests, zipfile, io, os
+from memory_cf import MemoryBasedCF
 
 @st.cache_resource
 def download_and_extract_models():
     url = "https://huggingface.co/Jkkeer/univ-recommender-models/resolve/main/models.zip"
     extract_path = "models"
-
     if not os.path.exists(extract_path):
         os.makedirs(extract_path, exist_ok=True)
         st.info("📦 Downloading models.zip from Hugging Face...")
@@ -36,27 +33,19 @@ def download_and_extract_models():
                 st.stop()
     return extract_path
 
-
-# ---------------------------
-# Load data and models
-# ---------------------------
 @st.cache_data
 def load_data():
     return pd.read_csv('./data/categorized_specializations.csv')
 
-from memory_cf import MemoryBasedCF
+df = load_data()
 
-
-# ---------------------------
-# Load Specialization Models
-# ---------------------------
 @st.cache_resource
 def load_specialization_models():
     model_dir = download_and_extract_models()
     major_path = os.path.join(model_dir, "major_models_compressed")
     try:
         models = {
-            "rf_specialization": joblib.load(os.path.join(major_path, "rf_specialization.pkl")),
+            "rf_specialization": joblib.load(os.path.join(major_path, "rf_specialization.pkl"))[0],
             "xgb_specialization": xgb.XGBClassifier(),
             "label_encoders_specialization": joblib.load(os.path.join(major_path, "label_encoders_specialization.pkl")),
             "scaler_specialization": joblib.load(os.path.join(major_path, "scaler_specialization.pkl")),
@@ -69,9 +58,6 @@ def load_specialization_models():
         st.error(f"❌ Error loading specialization models: {e}")
         return None
 
-# ---------------------------
-# Load University Models
-# ---------------------------
 @st.cache_resource
 def load_university_models():
     model_dir = download_and_extract_models()
@@ -89,6 +75,7 @@ def load_university_models():
     except Exception as e:
         st.error(f"❌ Error loading university models: {e}")
         return None
+
         
 df = load_data()
 
