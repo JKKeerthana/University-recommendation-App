@@ -4,3 +4,4 @@ streamlit
 xgboost==2.1.4
 pandas
 numpy
+requests
