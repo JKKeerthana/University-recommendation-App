@@ -22,19 +22,19 @@ import gdown
 # Google Drive File Mapping
 # ---------------------------
 GDRIVE_FILES = {
-    "major_models/rf_specialization.pkl": "139YBiI_stmy-OZMKDQJsWYjoszV7wD9N",
-    "major_models/xgb_specialization.json": "1GzNYcUf2DhPrAEA_WgwH-DX92--N4Dnp",
-    "major_models/label_encoders_specialization.pkl": "12RH-J3K23bI7lRWVm1h8AFmYw7yVG-uk",
-    "major_models/scaler_specialization.pkl": "1xJgIOyp_6bisFw7e-W9hS8VKxS7n92SU",
-    "major_models/cf_model_spec.pkl": "1q_ptWZX0nE_i1AHaKnsOZ2Isv_-XLzNq",
-    "major_models/le_y_spec.pkl": "1V4rETDk6SPB8oX85cD7uxYgob90RqPni",
+    "major_models_compressed/rf_specialization.pkl": "1XOdLFdopWRHLbIoFWQUzclbkKkkwNS2b",
+    "major_models_compressed/xgb_specialization.json": "11-XSs7T0A1FUpys9iXg3-lL-tGnQzngr",
+    "major_models_compressed/label_encoders_specialization.pkl": "12WYx5RlLCYYaEJJ0VKijTiXY1VOt7IU0",
+    "major_models_compressed/scaler_specialization.pkl": "1INH06qnZi8T37ADf1DfLJ6P7Kz1SkcLs",
+    "major_models_compressed/cf_model_spec.pkl": "1HwfEPnC6KhSlDPP0Lnd4kuhsui5EE6PI",
+    "major_models_compressed/le_y_spec.pkl": "1uAa_N9JRi8T6a4Phs1UtMCpBU2pX9euN",
 
-    "university_models/rf_university.pkl": "1re3DqeQvIENwmhZ4sstJ4guzy-gWb6Rh",
-    "university_models/label_encoders_university.pkl": "16zUKHgdA-m1ebnRC_WN4z1g4_AnJ9dZN",
-    "university_models/scaler_university.pkl": "1mlO1Hu1MQvwBbOqpYS1h2Aeb9KOkuw-A",
-    "university_models/cf_model_memory.pkl": "1b5FGm0TA9We9eHR2GAc9Fl8I28Jwz2Ja",
-    "university_models/le_y_univ.pkl": "1MfM9QO3cfD9Wh6Zh_e3zu1pcZIRK66uo",
-    "university_models/one_hot_columns_university.pkl": "1XjZHSgvSjye3FMN7oP-HM2Un-gA1tQOb",
+    "university_models_compressed/rf_university.pkl": "1e2z_75uvh0dL-UnpoY7b6HT98EqEVoaG",
+    "university_models_compressed/label_encoders_university.pkl": "1JEQQqHEySZJmvKjqQh4Dw61fNI2oemW2",
+    "university_models_compressed/scaler_university.pkl": "10Skhns2I1bechXG4mf6PpJFnN_LxHSXi",
+    "university_models_compressed/cf_model_memory.pkl": "1rC7qaT3bHVjL2lcDMRMNtEzwCt331G6V",
+    "university_models_compressed/le_y_univ.pkl": "14aya7tNcF96Pes7TncygmoWEHCddiDUM",
+    "university_models_compressed/one_hot_columns_university.pkl": "1v3uh_-ZzZDWOMeEH_vY0Xsbg57NVdgV8",
 }
 
 
@@ -75,7 +75,7 @@ class MemoryBasedCF:
 # Download models from Google Drive
 # ---------------------------
 @st.cache_resource
-def download_models_from_drive(file_map, base_dir="MODELS"):
+def download_models_from_drive(file_map, base_dir="modelsC"):
     os.makedirs(base_dir, exist_ok=True)
     for rel_path, file_id in file_map.items():
         full_path = os.path.join(base_dir, rel_path)
@@ -92,7 +92,7 @@ def download_models_from_drive(file_map, base_dir="MODELS"):
 @st.cache_resource
 def load_specialization_models():
     model_dir = download_models_from_drive(GDRIVE_FILES)
-    major_path = os.path.join(model_dir, "major_models")
+    major_path = os.path.join(model_dir, "major_models_compressed")
     try:
         models = {
             "rf_specialization": joblib.load(os.path.join(major_path, "rf_specialization.pkl")),
@@ -114,7 +114,7 @@ def load_specialization_models():
 @st.cache_resource
 def load_university_models():
     model_dir = download_models_from_drive(GDRIVE_FILES)
-    university_path = os.path.join(model_dir, "university_models")
+    university_path = os.path.join(model_dir, "university_models_compressed")
     try:
         models = {
             "rf_university": joblib.load(os.path.join(university_path, "rf_university.pkl")),
