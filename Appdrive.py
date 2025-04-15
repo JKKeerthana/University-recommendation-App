@@ -14,79 +14,55 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.decomposition import TruncatedSVD
 import requests, zipfile, io, os
-from memory_cf import MemoryBasedCF
+from memory_cf import MemoryBasedCF  # Make sure this file exists
 
-@st.cache_resource
-def download_and_extract_models():
-    url = "https://huggingface.co/Jkkeer/univ-recommender-models/resolve/main/models.zip"
-    extract_path = "models"
-    if not os.path.exists(extract_path):
-        os.makedirs(extract_path, exist_ok=True)
-        st.info("📦 Downloading models.zip from Hugging Face...")
-        with st.spinner("Unzipping models..."):
-            response = requests.get(url)
-            if response.status_code == 200:
-                z = zipfile.ZipFile(io.BytesIO(response.content))
-                z.extractall(extract_path)
-            else:
-                st.error("❌ Failed to download from Hugging Face.")
-                st.stop()
-    return extract_path
-
-def show_zip_contents():
-    url = "https://huggingface.co/Jkkeer/univ-recommender-models/resolve/main/models.zip"
-    r = requests.get(url)
-    z = zipfile.ZipFile(io.BytesIO(r.content))
-    st.write("📁 Files in models.zip:")
-    for name in z.namelist():
-        st.text(name)
-
-
+# ------------------------------
+# Load CSV data
+# ------------------------------
 @st.cache_data
 def load_data():
-    return pd.read_csv('./data/categorized_specializations.csv')
+    return pd.read_csv("data/categorized_specializations.csv")
 
 df = load_data()
 
+# ------------------------------
+# Load specialization models
+# ------------------------------
 @st.cache_resource
 def load_specialization_models():
-    model_dir = download_and_extract_models()
-    major_path = os.path.join(model_dir, "major_models_compressed")
     try:
         models = {
-            "rf_specialization": joblib.load(os.path.join(major_path, "rf_specialization.pkl"))[0],
+            "rf_specialization": joblib.load("major_models_compressed/rf_specialization.pkl")[0],
             "xgb_specialization": xgb.XGBClassifier(),
-            "label_encoders_specialization": joblib.load(os.path.join(major_path, "label_encoders_specialization.pkl")),
-            "scaler_specialization": joblib.load(os.path.join(major_path, "scaler_specialization.pkl")),
-            "cf_model_spec": joblib.load(os.path.join(major_path, "cf_model_spec.pkl")),
-            "le_y_specialization": joblib.load(os.path.join(major_path, "le_y_spec.pkl")),
+            "label_encoders_specialization": joblib.load("major_models_compressed/label_encoders_specialization.pkl"),
+            "scaler_specialization": joblib.load("major_models_compressed/scaler_specialization.pkl"),
+            "cf_model_spec": joblib.load("major_models_compressed/cf_model_spec.pkl"),
+            "le_y_specialization": joblib.load("major_models_compressed/le_y_spec.pkl"),
         }
-        models["xgb_specialization"].load_model(os.path.join(major_path, "xgb_specialization.json"))
+        models["xgb_specialization"].load_model("major_models_compressed/xgb_specialization.json")
         return models
     except Exception as e:
-        st.error(f"❌ Error loading specialization models: {e}")
+        st.error(f"Error loading specialization models: {e}")
         return None
 
+# ------------------------------
+# Load university models
+# ------------------------------
 @st.cache_resource
 def load_university_models():
-    model_dir = download_and_extract_models()
-    university_path = os.path.join(model_dir, "university_models_compressed")
     try:
         models = {
-            "rf_university": joblib.load(os.path.join(university_path, "rf_university.pkl")),
-            "label_encoders_university": joblib.load(os.path.join(university_path, "label_encoders_university.pkl")),
-            "scaler_university": joblib.load(os.path.join(university_path, "scaler_university.pkl")),
-            "cf_model_univ": joblib.load(os.path.join(university_path, "cf_model_memory.pkl")),
-            "le_y_university": joblib.load(os.path.join(university_path, "le_y_univ.pkl")),
-            "one_hot_columns_university": joblib.load(os.path.join(university_path, "one_hot_columns_university.pkl")),
+            "rf_university": joblib.load("university_models_compressed/rf_university.pkl"),
+            "label_encoders_university": joblib.load("university_models_compressed/label_encoders_university.pkl"),
+            "scaler_university": joblib.load("university_models_compressed/scaler_university.pkl"),
+            "cf_model_univ": joblib.load("university_models_compressed/cf_model_memory.pkl"),
+            "le_y_university": joblib.load("university_models_compressed/le_y_univ.pkl"),
+            "one_hot_columns_university": joblib.load("university_models_compressed/one_hot_columns_university.pkl"),
         }
         return models
     except Exception as e:
-        st.error(f"❌ Error loading university models: {e}")
+        st.error(f"Error loading university models: {e}")
         return None
-
-        
-df = load_data()
 
 page = st.sidebar.radio("Select a Page", ["Home", "Major Recommendation", "University Recommendation"])
 
